@@ -42,7 +42,7 @@
 /************************************************************************/
 /******/ ([
 /* 0 */
-/***/ function(module, exports) {
+/***/ function(module, exports, __webpack_require__) {
 
 	/*
 	
@@ -54,22 +54,52 @@
 	Main program
 	
 	*/
+	"use strict";
+	var Scene_1 = __webpack_require__(1);
 	function main() {
 	    var canvas;
-	    var gl;
+	    var scene;
 	    canvas = document.createElement("canvas");
 	    canvas.width = 500;
 	    canvas.height = 500;
 	    document.getElementById('container').appendChild(canvas);
-	    gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
-	    gl.clearColor(0, 0, 0, 1);
-	    gl.viewport(0, 0, canvas.width, canvas.height);
-	    gl.enable(gl.DEPTH_TEST);
-	    gl.depthFunc(gl.LEQUAL);
-	    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-	    console.log(gl);
+	    scene = new Scene_1.default(canvas);
+	    scene.render();
 	}
 	window.onload = function (event) { return main(); };
+
+
+/***/ },
+/* 1 */
+/***/ function(module, exports) {
+
+	/*
+	
+	WebGL Raytracer
+	---------------
+	
+	Scene object:
+	- Initializes instance of WebGL
+	- Calls functions for WebGL to render
+	
+	*/
+	"use strict";
+	var Scene = (function () {
+	    function Scene(canvas) {
+	        // Initialzing WebGL
+	        this.gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+	        this.gl.viewport(0, 0, canvas.width, canvas.height);
+	        this.gl.enable(this.gl.DEPTH_TEST);
+	        this.gl.depthFunc(this.gl.LEQUAL);
+	        this.gl.clearColor(0, 0, 0, 1);
+	    }
+	    Scene.prototype.render = function () {
+	        this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
+	    };
+	    return Scene;
+	}());
+	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.default = Scene;
 
 
 /***/ }

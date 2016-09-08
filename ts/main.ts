@@ -19,5 +19,6 @@ function main(): void {
   canvas.height = 500;
   document.getElementById('container').appendChild(canvas);
   scene = new Scene(canvas);
+  scene.render();
 }
 window.onload = (event: Event): void => main();
