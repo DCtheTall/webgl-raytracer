@@ -9,16 +9,16 @@ Main program
 
 */
 
-import Scene from "./Scene";
+import Raytracer from "./Raytracer";
 
 function main(): void {
   let canvas: HTMLCanvasElement;
-  let scene: Scene;
+  let raytracer: Raytracer;
   canvas = document.createElement("canvas");
   canvas.width = 500;
   canvas.height = 500;
   document.getElementById('container').appendChild(canvas);
-  scene = new Scene(canvas);
-  scene.render();
+  raytracer = new Raytracer(canvas);
+  raytracer.render();
 }
 window.onload = (event: Event): void => main();

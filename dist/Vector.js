@@ -8,6 +8,9 @@ var Vector = (function () {
     Vector.scale = function (k, v) {
         return new Vector(k * v.x, k * v.y, k * v.z);
     };
+    Vector.subtract = function (v1, v2) {
+        return new Vector(v1.x - v2.x, v1.y - v2.y, v1.z - v2.z);
+    };
     Vector.mag = function (v) {
         return Math.sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
     };

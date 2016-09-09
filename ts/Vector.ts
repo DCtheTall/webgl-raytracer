@@ -17,6 +17,9 @@ class Vector {
   static scale(k: number, v: Vector): Vector {
     return new Vector(k*v.x, k*v.y, k*v.z)
   }
+  static subtract(v1: Vector, v2: Vector): Vector {
+    return new Vector(v1.x-v2.x, v1.y-v2.y, v1.z-v2.z);
+  }
   static mag(v: Vector): number {
     return Math.sqrt(v.x*v.x + v.y*v.y + v.z*v.z);
   }

@@ -10,7 +10,8 @@
   "files": [
     "./typings/index.d.ts",
     "./ts/main.ts",
-    "./ts/Scene.ts",
-    "./ts/Vector.ts"
+    "./ts/Raytracer.ts",
+    "./ts/Vector.ts",
+    "./ts/Camera.ts"
   ]
 }
