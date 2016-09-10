@@ -86,7 +86,12 @@
 	"use strict";
 	var Vector_1 = __webpack_require__(2);
 	var Camera_1 = __webpack_require__(3);
+	var Shaders_1 = __webpack_require__(4);
 	var Raytracer = (function () {
+	    /*
+	    * @class Raytracer
+	    * @constructor
+	    */
 	    function Raytracer(canvas) {
 	        // Initialzing WebGL
 	        this.gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
@@ -94,15 +99,59 @@
 	        this.gl.enable(this.gl.DEPTH_TEST);
 	        this.gl.depthFunc(this.gl.LEQUAL);
 	        this.gl.clearColor(0, 0, 0, 1);
+	        // Initializing shaders
+	        this.shaderProgram = Shaders_1.default(this.gl);
+	        if (this.shaderProgram === null) {
+	            throw new Error("Could not compile shaders. See error message for details.");
+	        }
+	        // Initializing buffers
+	        this.initBuffers();
 	        // Setting camera to null
 	        this.camera = null;
 	    }
-	    // Set position and lookAt vector of camera
+	    /*
+	    * This method initializes the vertex buffers
+	    *
+	    * @class Raytracer
+	    * @method initBuffers
+	    */
+	    Raytracer.prototype.initBuffers = function () {
+	        var aWindowPosition;
+	        var vertices;
+	        var windowBuffer;
+	        aWindowPosition = this.gl.getAttribLocation(this.shaderProgram, 'aWindowPosition');
+	        this.gl.enableVertexAttribArray(aWindowPosition);
+	        vertices = [
+	            1., 1.,
+	            -1., 1.,
+	            1., -1.,
+	            -1., -1.
+	        ];
+	        windowBuffer = this.gl.createBuffer();
+	        this.gl.bindBuffer(this.gl.ARRAY_BUFFER, windowBuffer);
+	        this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array(vertices), this.gl.STATIC_DRAW);
+	        this.gl.vertexAttribPointer(aWindowPosition, 2, this.gl.FLOAT, false, 0, 0);
+	    };
+	    /*
+	    * This method sets position and lookAt vectors of the camera
+	    *
+	    * @class Raycaster
+	    * @method setLookAt
+	    */
 	    Raytracer.prototype.setLookAt = function (eyeX, eyeY, eyeZ, atX, atY, atZ) {
 	        this.camera = new Camera_1.default(new Vector_1.default(eyeX, eyeY, eyeZ), new Vector_1.default(atX, atY, atZ));
 	    };
+	    /*
+	    * This method renders the scene in WebGL
+	    *
+	    * @class Raycaster
+	    * @method render
+	    */
 	    Raytracer.prototype.render = function () {
+	        // Clear last rendered frame
 	        this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
+	        // Draw new frame
+	        this.gl.drawArrays(this.gl.TRIANGLE_STRIP, 0, 4);
 	    };
 	    return Raytracer;
 	}());
@@ -198,6 +247,78 @@
 	}());
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.default = Camera;
+
+
+/***/ },
+/* 4 */
+/***/ function(module, exports) {
+
+	/*
+	
+	WebGL Raytracer
+	---------------
+	
+	Shaders module:
+	- contains source for vertex and fragment shaders
+	- contains function to get shader program from source
+	
+	*/
+	"use strict";
+	/****************************************************/
+	/*
+	* SHADER SOURCE CODE
+	*/
+	var VERTEX_SHADER;
+	var FRAGMENT_SHADER;
+	/* VERTEX SHADER */
+	VERTEX_SHADER = "\n  attribute vec2 aWindowPosition;\n\n  void main() {\n    gl_Position = vec4(aWindowPosition, 1., 1.);\n  }\n";
+	/* FRAGMENT SHADER */
+	FRAGMENT_SHADER = "\n  void main() {\n    gl_FragColor = vec4(1., 0., 0., 1.);\n  }\n";
+	/****************************************************/
+	/*
+	* This function loads the shader from the source code
+	*/
+	function getShader(gl, source, vertexOrFragment) {
+	    var shader;
+	    shader = vertexOrFragment ?
+	        gl.createShader(gl.VERTEX_SHADER) : gl.createShader(gl.FRAGMENT_SHADER);
+	    gl.shaderSource(shader, source);
+	    gl.compileShader(shader);
+	    if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+	        console.error('Shader failed to compile: ' + gl.getShaderInfoLog(shader));
+	        return null;
+	    }
+	    return shader;
+	}
+	/****************************************************/
+	/*
+	* Shader module contains shader source and methods to compile/attach shaders
+	*
+	* @function initShaders
+	*/
+	function initShaders(gl) {
+	    var vertexShader;
+	    var fragmentShader;
+	    var shaderProgram;
+	    vertexShader = getShader(gl, VERTEX_SHADER, true);
+	    fragmentShader = getShader(gl, FRAGMENT_SHADER, false);
+	    if (vertexShader === null || fragmentShader === null) {
+	        console.log("Shader failed to compile. See error message for details.");
+	        return null;
+	    }
+	    shaderProgram = gl.createProgram();
+	    gl.attachShader(shaderProgram, vertexShader);
+	    gl.attachShader(shaderProgram, fragmentShader);
+	    gl.linkProgram(shaderProgram);
+	    if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
+	        console.error("Could not initialize shader program.");
+	        return null;
+	    }
+	    gl.useProgram(shaderProgram);
+	    return shaderProgram;
+	}
+	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.default = initShaders;
 
 
 /***/ }
