@@ -13,7 +13,10 @@ import Vector from "./Vector";
 import Camera from "./Camera";
 import initShaders from "./Shaders";
 
-class Raytracer {
+export default class Raytracer {
+
+  public ASPECT_RATIO: number;
+
   private gl: WebGLRenderingContext;
   private shaderProgram: WebGLProgram;
   private camera: Camera;
@@ -23,6 +26,7 @@ class Raytracer {
   * @constructor
   */
   constructor(canvas: HTMLCanvasElement) {
+    this.ASPECT_RATIO = canvas.width / canvas.height;
     // Initialzing WebGL
     this.gl = <WebGLRenderingContext>
       canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
@@ -35,7 +39,7 @@ class Raytracer {
       throw new Error("Could not compile shaders. See error message for details.");
     }
     // Initializing buffers
-    this.initBuffers(canvas.width / canvas.height);
+    this.initBuffers();
     // Setting camera to null
     this.camera = null;
   }
@@ -46,7 +50,7 @@ class Raytracer {
   * @class Raytracer
   * @method initBuffers
   */
-  private initBuffers(ratio: number): void {
+  private initBuffers(): void {
     let aWindowPosition: number;
     let aPosition: number;
     let vertices: number[];
@@ -98,6 +102,7 @@ class Raytracer {
   * @method render
   */
   public render(): void {
+    const AspRat: number = this.ASPECT_RATIO;
     let cameraPosition: WebGLUniformLocation;
     let cameraTopLeft: Vector;
     let cameraBottomLeft: Vector;
@@ -110,21 +115,25 @@ class Raytracer {
     this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
 
     // Passing camera position to the shader
-    cameraPosition = this.gl.getUniformLocation(this.shaderProgram, 'cameraPosition');
+    cameraPosition = this.gl.getUniformLocation(this.shaderProgram, 'cameraPos');
     this.gl.uniform3fv(cameraPosition, new Float32Array(Vector.push(this.camera.pos, [])));
 
     // Get camera corners
     cameraTopLeft = Vector.add(
-      this.camera.forward, Vector.subtract(this.camera.up, this.camera.right)
+      this.camera.forward,
+      Vector.subtract(this.camera.up, Vector.scale(AspRat, this.camera.right))
     );
     cameraBottomLeft = Vector.subtract(
-      this.camera.forward, Vector.add(this.camera.up, this.camera.right)
+      this.camera.forward,
+      Vector.add(this.camera.up, Vector.scale(AspRat, this.camera.right))
     );
     cameraTopRight = Vector.add(
-      this.camera.forward, Vector.add(this.camera.up, this.camera.right)
+      this.camera.forward,
+      Vector.add(this.camera.up, Vector.scale(AspRat, this.camera.right))
     );
     cameraBottomRight = Vector.add(
-      this.camera.forward, Vector.subtract(this.camera.right, this.camera.up)
+      this.camera.forward,
+      Vector.subtract(Vector.scale(AspRat, this.camera.right), this.camera.up)
     );
     Vector.push(cameraTopLeft, corners);
     Vector.push(cameraBottomLeft, corners);
@@ -138,4 +147,3 @@ class Raytracer {
     this.gl.drawArrays(this.gl.TRIANGLE_STRIP, 0, 4);
   }
 }
-export default Raytracer;

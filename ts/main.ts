@@ -16,12 +16,12 @@ function main(): void {
   let raytracer: Raytracer;
 
   canvas = document.createElement("canvas");
-  canvas.width = 500;
+  canvas.width = 700;
   canvas.height = 500;
   document.getElementById('container').appendChild(canvas);
 
   raytracer = new Raytracer(canvas);
-  raytracer.setLookAt(0, 0, 1, 0, 0, 0);
-  setTimeout(() => { raytracer.render(); }, 500);
+  raytracer.setLookAt(0, 0, 10, 0, 0, 0);
+  setTimeout(() => { raytracer.render(); }, 100);
 }
 window.onload = (event: Event): void => main();

@@ -41,14 +41,67 @@ FRAGMENT_SHADER = `
 
   varying vec3 vPosition;
 
-  uniform vec3 cameraPosition;
+  uniform vec3 cameraPos;
 
-  vec3 cameraDirection;
+  /**
+  * Intersection test for spheres
+  */
+  float intersectSphere(vec3 rayStart, vec3 rayDir, vec3 center, float r) {
+    vec3 at;
+    float v;
+    float dist;
+    float disc;
 
+    at = center - rayStart;
+    v = dot(at, rayDir);
+    dist = -1.;
+    if( v >= 0. ) {
+      disc = r * r - ( dot(at, at) - v * v );
+      if( disc > 0. ) dist = v - sqrt(disc);
+    }
+    return dist;
+  }
+
+  /**
+  * Color sphere
+  */
+  vec3 colorSphere(vec3 pos, vec3 viewDir, vec3 diffColor, vec3 specColor) {
+    vec3 lightPos = vec3(-1., 2., 2.);
+    vec3 lightColor = vec3(1.);
+
+    vec3 lightDir;
+    float distance;
+    float lambertian;
+    vec3 H;
+    float specular;
+
+    lightDir = normalize(lightPos - pos);
+    distance = length(lightPos - pos);
+
+    lambertian = clamp( dot(normalize(pos), lightDir), 0.2, 1. );
+
+    H = normalize(lightDir + viewDir);
+    specular = clamp( pow(dot(normalize(pos), H), 250.), 0.01, 1.) / distance;
+
+    return (lambertian * diffColor + specular * specColor) * lightColor;
+  }
+
+
+  /**
+  * main function
+  */
   void main() {
-    cameraDirection = normalize(vPosition - cameraPosition);
-    if( vPosition.x > 0. ) {
-      gl_FragColor = vec4(1., 0., 0., 1.);
+    vec3 cameraDir;
+    float dist;
+    vec3 color;
+
+    cameraDir = normalize(vPosition - cameraPos);
+    dist = intersectSphere(cameraPos, cameraDir, vec3(0.), 0.5);
+
+    if( dist > 0. ) {
+      vec3 pos = cameraPos + dist * cameraDir;
+      color = colorSphere( pos, -1.*cameraDir, vec3(0.1, 0.5, 1.), vec3(0.9) );
+      gl_FragColor = vec4(color, 1.);
     }
     else {
       gl_FragColor = vec4(0., 0., 0., 1.);
@@ -111,4 +164,9 @@ function initShaders(gl: WebGLRenderingContext): WebGLProgram {
 
   return shaderProgram;
 }
+
+/************************************************************************/
+
+// Export initShaders from this program
+
 export default initShaders;

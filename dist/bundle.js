@@ -60,12 +60,12 @@
 	    var canvas;
 	    var raytracer;
 	    canvas = document.createElement("canvas");
-	    canvas.width = 500;
+	    canvas.width = 700;
 	    canvas.height = 500;
 	    document.getElementById('container').appendChild(canvas);
 	    raytracer = new Raytracer_1.default(canvas);
-	    raytracer.setLookAt(0, 0, 1, 0, 0, 0);
-	    setTimeout(function () { raytracer.render(); }, 500);
+	    raytracer.setLookAt(0, 0, 10, 0, 0, 0);
+	    setTimeout(function () { raytracer.render(); }, 100);
 	}
 	window.onload = function (event) { return main(); };
 
@@ -94,6 +94,7 @@
 	    * @constructor
 	    */
 	    function Raytracer(canvas) {
+	        this.ASPECT_RATIO = canvas.width / canvas.height;
 	        // Initialzing WebGL
 	        this.gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
 	        this.gl.viewport(0, 0, canvas.width, canvas.height);
@@ -105,7 +106,7 @@
 	            throw new Error("Could not compile shaders. See error message for details.");
 	        }
 	        // Initializing buffers
-	        this.initBuffers(canvas.width / canvas.height);
+	        this.initBuffers();
 	        // Setting camera to null
 	        this.camera = null;
 	    }
@@ -115,7 +116,7 @@
 	    * @class Raytracer
 	    * @method initBuffers
 	    */
-	    Raytracer.prototype.initBuffers = function (ratio) {
+	    Raytracer.prototype.initBuffers = function () {
 	        var aWindowPosition;
 	        var aPosition;
 	        var vertices;
@@ -157,6 +158,7 @@
 	    * @method render
 	    */
 	    Raytracer.prototype.render = function () {
+	        var AspRat = this.ASPECT_RATIO;
 	        var cameraPosition;
 	        var cameraTopLeft;
 	        var cameraBottomLeft;
@@ -167,13 +169,13 @@
 	        // Clear last rendered frame
 	        this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
 	        // Passing camera position to the shader
-	        cameraPosition = this.gl.getUniformLocation(this.shaderProgram, 'cameraPosition');
+	        cameraPosition = this.gl.getUniformLocation(this.shaderProgram, 'cameraPos');
 	        this.gl.uniform3fv(cameraPosition, new Float32Array(Vector_1.default.push(this.camera.pos, [])));
 	        // Get camera corners
-	        cameraTopLeft = Vector_1.default.add(this.camera.forward, Vector_1.default.subtract(this.camera.up, this.camera.right));
-	        cameraBottomLeft = Vector_1.default.subtract(this.camera.forward, Vector_1.default.add(this.camera.up, this.camera.right));
-	        cameraTopRight = Vector_1.default.add(this.camera.forward, Vector_1.default.add(this.camera.up, this.camera.right));
-	        cameraBottomRight = Vector_1.default.add(this.camera.forward, Vector_1.default.subtract(this.camera.right, this.camera.up));
+	        cameraTopLeft = Vector_1.default.add(this.camera.forward, Vector_1.default.subtract(this.camera.up, Vector_1.default.scale(AspRat, this.camera.right)));
+	        cameraBottomLeft = Vector_1.default.subtract(this.camera.forward, Vector_1.default.add(this.camera.up, Vector_1.default.scale(AspRat, this.camera.right)));
+	        cameraTopRight = Vector_1.default.add(this.camera.forward, Vector_1.default.add(this.camera.up, Vector_1.default.scale(AspRat, this.camera.right)));
+	        cameraBottomRight = Vector_1.default.add(this.camera.forward, Vector_1.default.subtract(Vector_1.default.scale(AspRat, this.camera.right), this.camera.up));
 	        Vector_1.default.push(cameraTopLeft, corners);
 	        Vector_1.default.push(cameraBottomLeft, corners);
 	        Vector_1.default.push(cameraTopRight, corners);
@@ -270,13 +272,6 @@
 	        this.right = Vector_1.default.normalize(Vector_1.default.cross(down, this.forward));
 	        this.up = Vector_1.default.normalize(Vector_1.default.cross(this.right, this.forward));
 	    }
-	    // Zoom camera in or out
-	    // a number >1 zooms the camera out k times
-	    // a number <1 zooms the camera in 1/k times
-	    Camera.prototype.zoom = function (k) {
-	        this.right = Vector_1.default.scale(k, this.right);
-	        this.up = Vector_1.default.scale(k, this.right);
-	    };
 	    return Camera;
 	}());
 	Object.defineProperty(exports, "__esModule", { value: true });
@@ -307,7 +302,7 @@
 	/* VERTEX SHADER */
 	VERTEX_SHADER = "\n  precision mediump float;\n\n  attribute vec2 aWindowPosition;\n  attribute vec3 aPosition;\n\n  varying vec3 vPosition;\n\n  void main() {\n    gl_Position = vec4(aWindowPosition, 1., 1.);\n    vPosition = aPosition;\n  }\n";
 	/* FRAGMENT SHADER */
-	FRAGMENT_SHADER = "\n  precision mediump float;\n\n  varying vec3 vPosition;\n\n  uniform vec3 cameraPosition;\n\n  vec3 cameraDirection;\n\n  void main() {\n    cameraDirection = normalize(vPosition - cameraPosition);\n    if( vPosition.x > 0. ) {\n      gl_FragColor = vec4(1., 0., 0., 1.);\n    }\n    else {\n      gl_FragColor = vec4(0., 0., 0., 1.);\n    }\n  }\n";
+	FRAGMENT_SHADER = "\n  precision mediump float;\n\n  varying vec3 vPosition;\n\n  uniform vec3 cameraPos;\n\n  /**\n  * Intersection test for spheres\n  */\n  float intersectSphere(vec3 rayStart, vec3 rayDir, vec3 center, float r) {\n    vec3 at;\n    float v;\n    float dist;\n    float disc;\n\n    at = center - rayStart;\n    v = dot(at, rayDir);\n    dist = -1.;\n    if( v >= 0. ) {\n      disc = r * r - ( dot(at, at) - v * v );\n      if( disc > 0. ) dist = v - sqrt(disc);\n    }\n    return dist;\n  }\n\n  /**\n  * Color sphere\n  */\n  vec3 colorSphere(vec3 pos, vec3 viewDir, vec3 diffColor, vec3 specColor) {\n    vec3 lightPos = vec3(-1., 2., 2.);\n    vec3 lightColor = vec3(1.);\n\n    vec3 lightDir;\n    float distance;\n    float lambertian;\n    vec3 H;\n    float specular;\n\n    lightDir = normalize(lightPos - pos);\n    distance = length(lightPos - pos);\n\n    lambertian = clamp( dot(normalize(pos), lightDir), 0.2, 1. );\n\n    H = normalize(lightDir + viewDir);\n    specular = clamp( pow(dot(normalize(pos), H), 250.), 0.01, 1.) / distance;\n\n    return (lambertian * diffColor + specular * specColor) * lightColor;\n  }\n\n\n  /**\n  * main function\n  */\n  void main() {\n    vec3 cameraDir;\n    float dist;\n    vec3 color;\n\n    cameraDir = normalize(vPosition - cameraPos);\n    dist = intersectSphere(cameraPos, cameraDir, vec3(0.), 0.5);\n\n    if( dist > 0. ) {\n      vec3 pos = cameraPos + dist * cameraDir;\n      color = colorSphere( pos, -1.*cameraDir, vec3(0.1, 0.5, 1.), vec3(0.9) );\n      gl_FragColor = vec4(color, 1.);\n    }\n    else {\n      gl_FragColor = vec4(0., 0., 0., 1.);\n    }\n  }\n";
 	/****************************************************/
 	/*
 	* This function loads the shader from the source code

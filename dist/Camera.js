@@ -9,10 +9,6 @@ var Camera = (function () {
         this.right = Vector_1.default.normalize(Vector_1.default.cross(down, this.forward));
         this.up = Vector_1.default.normalize(Vector_1.default.cross(this.right, this.forward));
     }
-    Camera.prototype.zoom = function (k) {
-        this.right = Vector_1.default.scale(k, this.right);
-        this.up = Vector_1.default.scale(k, this.right);
-    };
     return Camera;
 }());
 Object.defineProperty(exports, "__esModule", { value: true });

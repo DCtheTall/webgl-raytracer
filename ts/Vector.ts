@@ -9,7 +9,7 @@ Vector object
 
 */
 
-class Vector {
+export default class Vector {
   constructor(public x: number,
               public y: number,
               public z: number) {}
@@ -47,4 +47,3 @@ class Vector {
     return array;
   }
 }
-export default Vector;

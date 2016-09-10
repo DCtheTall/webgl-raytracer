@@ -4,6 +4,7 @@ var Camera_1 = require("./Camera");
 var Shaders_1 = require("./Shaders");
 var Raytracer = (function () {
     function Raytracer(canvas) {
+        this.ASPECT_RATIO = canvas.width / canvas.height;
         this.gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
         this.gl.viewport(0, 0, canvas.width, canvas.height);
         this.gl.clearColor(0, 0, 0, 1);
@@ -12,10 +13,10 @@ var Raytracer = (function () {
         if (this.shaderProgram === null) {
             throw new Error("Could not compile shaders. See error message for details.");
         }
-        this.initBuffers(canvas.width / canvas.height);
+        this.initBuffers();
         this.camera = null;
     }
-    Raytracer.prototype.initBuffers = function (ratio) {
+    Raytracer.prototype.initBuffers = function () {
         var aWindowPosition;
         var aPosition;
         var vertices;
@@ -44,6 +45,7 @@ var Raytracer = (function () {
         this.camera = new Camera_1.default(new Vector_1.default(eyeX, eyeY, eyeZ), new Vector_1.default(atX, atY, atZ));
     };
     Raytracer.prototype.render = function () {
+        var AspRat = this.ASPECT_RATIO;
         var cameraPosition;
         var cameraTopLeft;
         var cameraBottomLeft;
@@ -52,12 +54,12 @@ var Raytracer = (function () {
         var corners = [];
         var aPosition;
         this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
-        cameraPosition = this.gl.getUniformLocation(this.shaderProgram, 'cameraPosition');
+        cameraPosition = this.gl.getUniformLocation(this.shaderProgram, 'cameraPos');
         this.gl.uniform3fv(cameraPosition, new Float32Array(Vector_1.default.push(this.camera.pos, [])));
-        cameraTopLeft = Vector_1.default.add(this.camera.forward, Vector_1.default.subtract(this.camera.up, this.camera.right));
-        cameraBottomLeft = Vector_1.default.subtract(this.camera.forward, Vector_1.default.add(this.camera.up, this.camera.right));
-        cameraTopRight = Vector_1.default.add(this.camera.forward, Vector_1.default.add(this.camera.up, this.camera.right));
-        cameraBottomRight = Vector_1.default.add(this.camera.forward, Vector_1.default.subtract(this.camera.right, this.camera.up));
+        cameraTopLeft = Vector_1.default.add(this.camera.forward, Vector_1.default.subtract(this.camera.up, Vector_1.default.scale(AspRat, this.camera.right)));
+        cameraBottomLeft = Vector_1.default.subtract(this.camera.forward, Vector_1.default.add(this.camera.up, Vector_1.default.scale(AspRat, this.camera.right)));
+        cameraTopRight = Vector_1.default.add(this.camera.forward, Vector_1.default.add(this.camera.up, Vector_1.default.scale(AspRat, this.camera.right)));
+        cameraBottomRight = Vector_1.default.add(this.camera.forward, Vector_1.default.subtract(Vector_1.default.scale(AspRat, this.camera.right), this.camera.up));
         Vector_1.default.push(cameraTopLeft, corners);
         Vector_1.default.push(cameraBottomLeft, corners);
         Vector_1.default.push(cameraTopRight, corners);
