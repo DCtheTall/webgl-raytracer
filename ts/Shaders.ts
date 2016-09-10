@@ -21,18 +21,38 @@ let FRAGMENT_SHADER: string;
 /* VERTEX SHADER */
 
 VERTEX_SHADER = `
+  precision mediump float;
+
   attribute vec2 aWindowPosition;
+  attribute vec3 aPosition;
+
+  varying vec3 vPosition;
 
   void main() {
     gl_Position = vec4(aWindowPosition, 1., 1.);
+    vPosition = aPosition;
   }
 `;
 
 /* FRAGMENT SHADER */
 
 FRAGMENT_SHADER = `
+  precision mediump float;
+
+  varying vec3 vPosition;
+
+  uniform vec3 cameraPosition;
+
+  vec3 cameraDirection;
+
   void main() {
-    gl_FragColor = vec4(1., 0., 0., 1.);
+    cameraDirection = normalize(vPosition - cameraPosition);
+    if( vPosition.x > 0. ) {
+      gl_FragColor = vec4(1., 0., 0., 1.);
+    }
+    else {
+      gl_FragColor = vec4(0., 0., 0., 1.);
+    }
   }
 `;
 

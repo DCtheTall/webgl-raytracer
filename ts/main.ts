@@ -21,6 +21,7 @@ function main(): void {
   document.getElementById('container').appendChild(canvas);
 
   raytracer = new Raytracer(canvas);
-  raytracer.render();
+  raytracer.setLookAt(0, 0, 1, 0, 0, 0);
+  setTimeout(() => { raytracer.render(); }, 500);
 }
 window.onload = (event: Event): void => main();

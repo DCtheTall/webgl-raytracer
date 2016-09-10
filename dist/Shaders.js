@@ -1,8 +1,8 @@
 "use strict";
 var VERTEX_SHADER;
 var FRAGMENT_SHADER;
-VERTEX_SHADER = "\n  attribute vec2 aWindowPosition;\n\n  void main() {\n    gl_Position = vec4(aWindowPosition, 1., 1.);\n  }\n";
-FRAGMENT_SHADER = "\n  void main() {\n    gl_FragColor = vec4(1., 0., 0., 1.);\n  }\n";
+VERTEX_SHADER = "\n  precision mediump float;\n\n  attribute vec2 aWindowPosition;\n  attribute vec3 aPosition;\n\n  varying vec3 vPosition;\n\n  void main() {\n    gl_Position = vec4(aWindowPosition, 1., 1.);\n    vPosition = aPosition;\n  }\n";
+FRAGMENT_SHADER = "\n  precision mediump float;\n\n  varying vec3 vPosition;\n\n  uniform vec3 cameraPosition;\n\n  vec3 cameraDirection;\n\n  void main() {\n    cameraDirection = normalize(vPosition - cameraPosition);\n    if( vPosition.x > 0. ) {\n      gl_FragColor = vec4(1., 0., 0., 1.);\n    }\n    else {\n      gl_FragColor = vec4(0., 0., 0., 1.);\n    }\n  }\n";
 function getShader(gl, source, vertexOrFragment) {
     var shader;
     shader = vertexOrFragment ?

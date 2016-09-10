@@ -17,6 +17,9 @@ class Vector {
   static scale(k: number, v: Vector): Vector {
     return new Vector(k*v.x, k*v.y, k*v.z)
   }
+  static add(v1: Vector, v2: Vector): Vector {
+    return new Vector(v1.x+v2.x, v1.y+v2.y, v1.z+v2.z);
+  }
   static subtract(v1: Vector, v2: Vector): Vector {
     return new Vector(v1.x-v2.x, v1.y-v2.y, v1.z-v2.z);
   }
@@ -39,8 +42,9 @@ class Vector {
                       v1.z * v2.x - v1.x * v2.z,
                       v1.x * v2.y - v1.y * v2.x);
   }
-  static push(v: Vector, array: number[]): void {
+  static push(v: Vector, array: number[]): number[] {
     array.push(v.x, v.y, v.z);
+    return array;
   }
 }
 export default Vector;

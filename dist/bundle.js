@@ -64,7 +64,8 @@
 	    canvas.height = 500;
 	    document.getElementById('container').appendChild(canvas);
 	    raytracer = new Raytracer_1.default(canvas);
-	    raytracer.render();
+	    raytracer.setLookAt(0, 0, 1, 0, 0, 0);
+	    setTimeout(function () { raytracer.render(); }, 500);
 	}
 	window.onload = function (event) { return main(); };
 
@@ -96,41 +97,49 @@
 	        // Initialzing WebGL
 	        this.gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
 	        this.gl.viewport(0, 0, canvas.width, canvas.height);
-	        this.gl.enable(this.gl.DEPTH_TEST);
-	        this.gl.depthFunc(this.gl.LEQUAL);
 	        this.gl.clearColor(0, 0, 0, 1);
+	        this.gl.clearDepth(1);
 	        // Initializing shaders
 	        this.shaderProgram = Shaders_1.default(this.gl);
 	        if (this.shaderProgram === null) {
 	            throw new Error("Could not compile shaders. See error message for details.");
 	        }
 	        // Initializing buffers
-	        this.initBuffers();
+	        this.initBuffers(canvas.width / canvas.height);
 	        // Setting camera to null
 	        this.camera = null;
 	    }
 	    /*
-	    * This method initializes the vertex buffers
+	    * This method initializes the vertex buffers, input is aspect ratio
 	    *
 	    * @class Raytracer
 	    * @method initBuffers
 	    */
-	    Raytracer.prototype.initBuffers = function () {
+	    Raytracer.prototype.initBuffers = function (ratio) {
 	        var aWindowPosition;
+	        var aPosition;
 	        var vertices;
 	        var windowBuffer;
+	        var positionBuffer;
+	        // Buffer for the vertices of the window
 	        aWindowPosition = this.gl.getAttribLocation(this.shaderProgram, 'aWindowPosition');
 	        this.gl.enableVertexAttribArray(aWindowPosition);
+	        aPosition = this.gl.getAttribLocation(this.shaderProgram, 'aPosition');
+	        this.gl.enableVertexAttribArray(aPosition);
 	        vertices = [
-	            1., 1.,
 	            -1., 1.,
-	            1., -1.,
-	            -1., -1.
+	            -1., -1.,
+	            1., 1.,
+	            1., -1.
 	        ];
 	        windowBuffer = this.gl.createBuffer();
 	        this.gl.bindBuffer(this.gl.ARRAY_BUFFER, windowBuffer);
 	        this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array(vertices), this.gl.STATIC_DRAW);
+	        this.gl.bindBuffer(this.gl.ARRAY_BUFFER, windowBuffer);
 	        this.gl.vertexAttribPointer(aWindowPosition, 2, this.gl.FLOAT, false, 0, 0);
+	        positionBuffer = this.gl.createBuffer();
+	        this.gl.bindBuffer(this.gl.ARRAY_BUFFER, positionBuffer);
+	        this.gl.vertexAttribPointer(aPosition, 3, this.gl.FLOAT, false, 0, 0);
 	    };
 	    /*
 	    * This method sets position and lookAt vectors of the camera
@@ -148,8 +157,29 @@
 	    * @method render
 	    */
 	    Raytracer.prototype.render = function () {
+	        var cameraPosition;
+	        var cameraTopLeft;
+	        var cameraBottomLeft;
+	        var cameraTopRight;
+	        var cameraBottomRight;
+	        var corners = [];
+	        var aPosition;
 	        // Clear last rendered frame
 	        this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
+	        // Passing camera position to the shader
+	        cameraPosition = this.gl.getUniformLocation(this.shaderProgram, 'cameraPosition');
+	        this.gl.uniform3fv(cameraPosition, new Float32Array(Vector_1.default.push(this.camera.pos, [])));
+	        // Get camera corners
+	        cameraTopLeft = Vector_1.default.add(this.camera.forward, Vector_1.default.subtract(this.camera.up, this.camera.right));
+	        cameraBottomLeft = Vector_1.default.subtract(this.camera.forward, Vector_1.default.add(this.camera.up, this.camera.right));
+	        cameraTopRight = Vector_1.default.add(this.camera.forward, Vector_1.default.add(this.camera.up, this.camera.right));
+	        cameraBottomRight = Vector_1.default.add(this.camera.forward, Vector_1.default.subtract(this.camera.right, this.camera.up));
+	        Vector_1.default.push(cameraTopLeft, corners);
+	        Vector_1.default.push(cameraBottomLeft, corners);
+	        Vector_1.default.push(cameraTopRight, corners);
+	        Vector_1.default.push(cameraBottomRight, corners);
+	        // Passing corners to the shader
+	        this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array(corners), this.gl.STATIC_DRAW);
 	        // Draw new frame
 	        this.gl.drawArrays(this.gl.TRIANGLE_STRIP, 0, 4);
 	    };
@@ -183,6 +213,9 @@
 	    Vector.scale = function (k, v) {
 	        return new Vector(k * v.x, k * v.y, k * v.z);
 	    };
+	    Vector.add = function (v1, v2) {
+	        return new Vector(v1.x + v2.x, v1.y + v2.y, v1.z + v2.z);
+	    };
 	    Vector.subtract = function (v1, v2) {
 	        return new Vector(v1.x - v2.x, v1.y - v2.y, v1.z - v2.z);
 	    };
@@ -205,6 +238,7 @@
 	    };
 	    Vector.push = function (v, array) {
 	        array.push(v.x, v.y, v.z);
+	        return array;
 	    };
 	    return Vector;
 	}());
@@ -271,9 +305,9 @@
 	var VERTEX_SHADER;
 	var FRAGMENT_SHADER;
 	/* VERTEX SHADER */
-	VERTEX_SHADER = "\n  attribute vec2 aWindowPosition;\n\n  void main() {\n    gl_Position = vec4(aWindowPosition, 1., 1.);\n  }\n";
+	VERTEX_SHADER = "\n  precision mediump float;\n\n  attribute vec2 aWindowPosition;\n  attribute vec3 aPosition;\n\n  varying vec3 vPosition;\n\n  void main() {\n    gl_Position = vec4(aWindowPosition, 1., 1.);\n    vPosition = aPosition;\n  }\n";
 	/* FRAGMENT SHADER */
-	FRAGMENT_SHADER = "\n  void main() {\n    gl_FragColor = vec4(1., 0., 0., 1.);\n  }\n";
+	FRAGMENT_SHADER = "\n  precision mediump float;\n\n  varying vec3 vPosition;\n\n  uniform vec3 cameraPosition;\n\n  vec3 cameraDirection;\n\n  void main() {\n    cameraDirection = normalize(vPosition - cameraPosition);\n    if( vPosition.x > 0. ) {\n      gl_FragColor = vec4(1., 0., 0., 1.);\n    }\n    else {\n      gl_FragColor = vec4(0., 0., 0., 1.);\n    }\n  }\n";
 	/****************************************************/
 	/*
 	* This function loads the shader from the source code

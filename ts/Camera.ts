@@ -22,7 +22,7 @@ class Camera {
     this.right = Vector.normalize(Vector.cross(down, this.forward));
     this.up = Vector.normalize(Vector.cross(this.right, this.forward));
   }
-  
+
   // Zoom camera in or out
   // a number >1 zooms the camera out k times
   // a number <1 zooms the camera in 1/k times
