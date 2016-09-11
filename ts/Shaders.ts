@@ -5,7 +5,9 @@ WebGL Raytracer
 
 Shaders module:
 - contains source for vertex and fragment shaders
-- contains function to get shader program from source
+- contains function to get shader program from source and compiles them
+- exports a function which initializes the shaders and returns the shader
+  program
 
 */
 
@@ -42,6 +44,10 @@ FRAGMENT_SHADER = `
   varying vec3 vPosition;
 
   uniform vec3 cameraPos;
+  uniform int numLights;
+  uniform vec3 lightPos[32];
+  uniform vec3 lightCol[32];
+  uniform float intensities[32];
 
   /**
   * Intersection test for spheres
@@ -66,24 +72,36 @@ FRAGMENT_SHADER = `
   * Color sphere
   */
   vec3 colorSphere(vec3 pos, vec3 viewDir, vec3 diffColor, vec3 specColor) {
-    vec3 lightPos = vec3(-1., 2., 2.);
-    vec3 lightColor = vec3(1.);
+    vec3 color = vec3(0.);
+    for ( int i = 0; i < 32; i++ ) {
+      if( i > numLights ) continue;
 
-    vec3 lightDir;
-    float distance;
-    float lambertian;
-    vec3 H;
-    float specular;
+      vec3 currPos;
+      vec3 currColor;
+      float intensity;
+      vec3 lightDir;
+      float distance;
+      float lambertian;
+      vec3 H;
+      float specular;
 
-    lightDir = normalize(lightPos - pos);
-    distance = length(lightPos - pos);
+      currPos = lightPos[i];
+      currColor = lightCol[i];
+      intensity = intensities[i];
 
-    lambertian = clamp( dot(normalize(pos), lightDir), 0.2, 1. );
+      lightDir = normalize(currPos - pos);
+      distance = length(currPos - pos);
 
-    H = normalize(lightDir + viewDir);
-    specular = clamp( pow(dot(normalize(pos), H), 250.), 0.01, 1.) / distance;
+      lambertian = intensity * clamp( dot(normalize(pos), lightDir), 0.2, 1. ) / distance;
 
-    return (lambertian * diffColor + specular * specColor) * lightColor;
+      H = normalize(reflect(lightDir, pos) + viewDir);
+      specular = intensity * clamp( pow(dot(normalize(pos), H), 50.), 0.01, 1.) / distance / distance;
+
+      color += (lambertian * diffColor + specular * specColor) * currColor;
+
+    }
+
+    return color;
   }
 
 

@@ -6,20 +6,25 @@ WebGL Raytracer
 Scene object:
 - Initializes instance of WebGL
 - Calls functions for WebGL to render
+- Initializes the shaders using initShaders()
+- Sends information about the camera to the GPU
+- Renders the scene
 
 */
 
 import Vector from "./Vector";
 import Camera from "./Camera";
 import initShaders from "./Shaders";
+import Light from "./Light";
 
 export default class Raytracer {
 
-  public ASPECT_RATIO: number;
-
+  private ASPECT_RATIO: number;
   private gl: WebGLRenderingContext;
   private shaderProgram: WebGLProgram;
   private camera: Camera;
+
+  public lights: Light[];
 
   /*
   * @class Raytracer
@@ -42,6 +47,8 @@ export default class Raytracer {
     this.initBuffers();
     // Setting camera to null
     this.camera = null;
+    // Initializing lights array
+    this.lights = [];
   }
 
   /*
@@ -104,11 +111,12 @@ export default class Raytracer {
   public render(): void {
     const AspRat: number = this.ASPECT_RATIO;
     let cameraPosition: WebGLUniformLocation;
+    let lightUniform: WebGLUniformLocation;
     let cameraTopLeft: Vector;
     let cameraBottomLeft: Vector;
     let cameraTopRight: Vector;
     let cameraBottomRight: Vector;
-    let corners: number[] = [];
+    let corners: number[];
     let aPosition: number;
 
     // Clear last rendered frame
@@ -118,7 +126,23 @@ export default class Raytracer {
     cameraPosition = this.gl.getUniformLocation(this.shaderProgram, 'cameraPos');
     this.gl.uniform3fv(cameraPosition, new Float32Array(Vector.push(this.camera.pos, [])));
 
+    // Passing lights to the shader
+    lightUniform = this.gl.getUniformLocation(this.shaderProgram, 'numLights');
+    this.gl.uniform1i(lightUniform, this.lights.length);
+    this.lights.map((currLight: Light, index: number) => {
+      // Sending positions
+      lightUniform = this.gl.getUniformLocation(this.shaderProgram, 'lightPos['+index+']');
+      this.gl.uniform3fv(lightUniform, new Float32Array(Vector.push(currLight.position, [])));
+      // Sending colors
+      lightUniform = this.gl.getUniformLocation(this.shaderProgram, 'lightCol['+index+']');
+      this.gl.uniform3fv(lightUniform, new Float32Array(Vector.push(currLight.color, [])));
+      // Sending intensities
+      lightUniform = this.gl.getUniformLocation(this.shaderProgram, 'intensities['+index+']');
+      this.gl.uniform1f(lightUniform, currLight.intensity);
+    });
+
     // Get camera corners
+    corners = [];
     cameraTopLeft = Vector.add(
       this.camera.forward,
       Vector.subtract(this.camera.up, Vector.scale(AspRat, this.camera.right))
@@ -140,7 +164,7 @@ export default class Raytracer {
     Vector.push(cameraTopRight, corners);
     Vector.push(cameraBottomRight, corners);
 
-    // Passing corners to the shader
+    // Passing corners to the shader via the array buffer
     this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array(corners), this.gl.STATIC_DRAW);
 
     // Draw new frame
