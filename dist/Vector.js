@@ -5,6 +5,11 @@ var Vector = (function () {
         this.y = y;
         this.z = z;
     }
+    Vector.prototype.set = function (x, y, z) {
+        this.x = x;
+        this.y = y;
+        this.z = z;
+    };
     Vector.scale = function (k, v) {
         return new Vector(k * v.x, k * v.y, k * v.z);
     };

@@ -16,6 +16,7 @@ import Vector from "./Vector";
 import Camera from "./Camera";
 import initShaders from "./Shaders";
 import Light from "./Light";
+import Sphere from "./Sphere";
 
 export default class Raytracer {
 
@@ -25,6 +26,7 @@ export default class Raytracer {
   private camera: Camera;
 
   public lights: Light[];
+  public spheres: Sphere[];
 
   /*
   * @class Raytracer
@@ -49,6 +51,8 @@ export default class Raytracer {
     this.camera = null;
     // Initializing lights array
     this.lights = [];
+    // Initializing spheres array
+    this.spheres = [];
   }
 
   /*
@@ -108,10 +112,14 @@ export default class Raytracer {
   * @class Raycaster
   * @method render
   */
-  public render(): void {
+  public render(animate: (raytracer: Raytracer) => void): void {
+    // Executes callback for each draw
+    animate(this);
+
     const AspRat: number = this.ASPECT_RATIO;
     let cameraPosition: WebGLUniformLocation;
     let lightUniform: WebGLUniformLocation;
+    let sphereUniform: WebGLUniformLocation;
     let cameraTopLeft: Vector;
     let cameraBottomLeft: Vector;
     let cameraTopRight: Vector;
@@ -139,6 +147,27 @@ export default class Raytracer {
       // Sending intensities
       lightUniform = this.gl.getUniformLocation(this.shaderProgram, 'intensities['+index+']');
       this.gl.uniform1f(lightUniform, currLight.intensity);
+    });
+
+    // Passing spheres to the shader
+    sphereUniform = this.gl.getUniformLocation(this.shaderProgram, 'numSpheres');
+    this.gl.uniform1i(sphereUniform, this.spheres.length);
+    this.spheres.map((currSphere: Sphere, index: number) => {
+      // Sending positions
+      sphereUniform = this.gl.getUniformLocation(this.shaderProgram, 'spherePos['+index+']');
+      this.gl.uniform3fv(sphereUniform, new Float32Array(Vector.push(currSphere.position, [])));
+      // Sending radius of sphere
+      sphereUniform = this.gl.getUniformLocation(this.shaderProgram, 'sphereRadius['+index+']');
+      this.gl.uniform1f(sphereUniform, currSphere.radius);
+      // Sending diffuse colors
+      sphereUniform = this.gl.getUniformLocation(this.shaderProgram, 'sphereDiff['+index+']');
+      this.gl.uniform3fv(sphereUniform, new Float32Array(Vector.push(currSphere.diffuse, [])));
+      // Sending specular colors
+      sphereUniform = this.gl.getUniformLocation(this.shaderProgram, 'sphereSpec['+index+']');
+      this.gl.uniform3fv(sphereUniform, new Float32Array(Vector.push(currSphere.specular, [])));
+      // Sending Phong exponent to the shader
+      sphereUniform = this.gl.getUniformLocation(this.shaderProgram, 'sphereRoughness['+index+']');
+      this.gl.uniform1f(sphereUniform, currSphere.roughness);
     });
 
     // Get camera corners
@@ -169,5 +198,8 @@ export default class Raytracer {
 
     // Draw new frame
     this.gl.drawArrays(this.gl.TRIANGLE_STRIP, 0, 4);
+
+    // Render loop
+    window.requestAnimationFrame(() => { this.render(animate); });
   }
 }

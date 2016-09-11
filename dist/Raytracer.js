@@ -16,6 +16,7 @@ var Raytracer = (function () {
         this.initBuffers();
         this.camera = null;
         this.lights = [];
+        this.spheres = [];
     }
     Raytracer.prototype.initBuffers = function () {
         var aWindowPosition;
@@ -45,11 +46,13 @@ var Raytracer = (function () {
     Raytracer.prototype.setLookAt = function (eyeX, eyeY, eyeZ, atX, atY, atZ) {
         this.camera = new Camera_1.default(new Vector_1.default(eyeX, eyeY, eyeZ), new Vector_1.default(atX, atY, atZ));
     };
-    Raytracer.prototype.render = function () {
+    Raytracer.prototype.render = function (animate) {
         var _this = this;
+        animate(this);
         var AspRat = this.ASPECT_RATIO;
         var cameraPosition;
         var lightUniform;
+        var sphereUniform;
         var cameraTopLeft;
         var cameraBottomLeft;
         var cameraTopRight;
@@ -69,6 +72,20 @@ var Raytracer = (function () {
             lightUniform = _this.gl.getUniformLocation(_this.shaderProgram, 'intensities[' + index + ']');
             _this.gl.uniform1f(lightUniform, currLight.intensity);
         });
+        sphereUniform = this.gl.getUniformLocation(this.shaderProgram, 'numSpheres');
+        this.gl.uniform1i(sphereUniform, this.spheres.length);
+        this.spheres.map(function (currSphere, index) {
+            sphereUniform = _this.gl.getUniformLocation(_this.shaderProgram, 'spherePos[' + index + ']');
+            _this.gl.uniform3fv(sphereUniform, new Float32Array(Vector_1.default.push(currSphere.position, [])));
+            sphereUniform = _this.gl.getUniformLocation(_this.shaderProgram, 'sphereRadius[' + index + ']');
+            _this.gl.uniform1f(sphereUniform, currSphere.radius);
+            sphereUniform = _this.gl.getUniformLocation(_this.shaderProgram, 'sphereDiff[' + index + ']');
+            _this.gl.uniform3fv(sphereUniform, new Float32Array(Vector_1.default.push(currSphere.diffuse, [])));
+            sphereUniform = _this.gl.getUniformLocation(_this.shaderProgram, 'sphereSpec[' + index + ']');
+            _this.gl.uniform3fv(sphereUniform, new Float32Array(Vector_1.default.push(currSphere.specular, [])));
+            sphereUniform = _this.gl.getUniformLocation(_this.shaderProgram, 'sphereRoughness[' + index + ']');
+            _this.gl.uniform1f(sphereUniform, currSphere.roughness);
+        });
         corners = [];
         cameraTopLeft = Vector_1.default.add(this.camera.forward, Vector_1.default.subtract(this.camera.up, Vector_1.default.scale(AspRat, this.camera.right)));
         cameraBottomLeft = Vector_1.default.subtract(this.camera.forward, Vector_1.default.add(this.camera.up, Vector_1.default.scale(AspRat, this.camera.right)));
@@ -80,6 +97,7 @@ var Raytracer = (function () {
         Vector_1.default.push(cameraBottomRight, corners);
         this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array(corners), this.gl.STATIC_DRAW);
         this.gl.drawArrays(this.gl.TRIANGLE_STRIP, 0, 4);
+        window.requestAnimationFrame(function () { _this.render(animate); });
     };
     return Raytracer;
 }());

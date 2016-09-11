@@ -58,6 +58,7 @@
 	var Raytracer_1 = __webpack_require__(1);
 	var Vector_1 = __webpack_require__(2);
 	var Light_1 = __webpack_require__(5);
+	var Sphere_1 = __webpack_require__(6);
 	function main() {
 	    var canvas;
 	    var raytracer;
@@ -67,8 +68,11 @@
 	    document.getElementById('container').appendChild(canvas);
 	    raytracer = new Raytracer_1.default(canvas);
 	    raytracer.setLookAt(0, 0, 10, 0, 0, 0);
-	    raytracer.lights.push(new Light_1.default({ pos: new Vector_1.default(-1, 2, 2), color: new Vector_1.default(1, 1, 1), intensity: 2 }), new Light_1.default({ pos: new Vector_1.default(8, 5, 2), color: new Vector_1.default(1., 0.5, 0), intensity: 10 }));
-	    setTimeout(function () { raytracer.render(); }, 100);
+	    raytracer.lights.push(new Light_1.default({ pos: new Vector_1.default(5, 20, 20), color: new Vector_1.default(1, 1, 1), intensity: 20 }), new Light_1.default({ pos: new Vector_1.default(3, 22, 18), color: new Vector_1.default(1, 0.7, 0.5), intensity: 20 }));
+	    raytracer.spheres.push(new Sphere_1.default({ pos: new Vector_1.default(0.25, 0, 1), diffuse: new Vector_1.default(1, 0.7, 0.3), radius: 0.5, roughness: 250 }), new Sphere_1.default({ pos: new Vector_1.default(-0.5, -0.5, 0), diffuse: new Vector_1.default(1, 0.3, 0.3), radius: 0.5, roughness: 150 }));
+	    setTimeout(function () { raytracer.render(animate); }, 100);
+	}
+	function animate(raytracer) {
 	}
 	window.onload = function (event) { return main(); };
 
@@ -117,6 +121,8 @@
 	        this.camera = null;
 	        // Initializing lights array
 	        this.lights = [];
+	        // Initializing spheres array
+	        this.spheres = [];
 	    }
 	    /*
 	    * This method initializes the vertex buffers, input is aspect ratio
@@ -165,11 +171,14 @@
 	    * @class Raycaster
 	    * @method render
 	    */
-	    Raytracer.prototype.render = function () {
+	    Raytracer.prototype.render = function (animate) {
 	        var _this = this;
+	        // Executes callback for each draw
+	        animate(this);
 	        var AspRat = this.ASPECT_RATIO;
 	        var cameraPosition;
 	        var lightUniform;
+	        var sphereUniform;
 	        var cameraTopLeft;
 	        var cameraBottomLeft;
 	        var cameraTopRight;
@@ -195,6 +204,26 @@
 	            lightUniform = _this.gl.getUniformLocation(_this.shaderProgram, 'intensities[' + index + ']');
 	            _this.gl.uniform1f(lightUniform, currLight.intensity);
 	        });
+	        // Passing spheres to the shader
+	        sphereUniform = this.gl.getUniformLocation(this.shaderProgram, 'numSpheres');
+	        this.gl.uniform1i(sphereUniform, this.spheres.length);
+	        this.spheres.map(function (currSphere, index) {
+	            // Sending positions
+	            sphereUniform = _this.gl.getUniformLocation(_this.shaderProgram, 'spherePos[' + index + ']');
+	            _this.gl.uniform3fv(sphereUniform, new Float32Array(Vector_1.default.push(currSphere.position, [])));
+	            // Sending radius of sphere
+	            sphereUniform = _this.gl.getUniformLocation(_this.shaderProgram, 'sphereRadius[' + index + ']');
+	            _this.gl.uniform1f(sphereUniform, currSphere.radius);
+	            // Sending diffuse colors
+	            sphereUniform = _this.gl.getUniformLocation(_this.shaderProgram, 'sphereDiff[' + index + ']');
+	            _this.gl.uniform3fv(sphereUniform, new Float32Array(Vector_1.default.push(currSphere.diffuse, [])));
+	            // Sending specular colors
+	            sphereUniform = _this.gl.getUniformLocation(_this.shaderProgram, 'sphereSpec[' + index + ']');
+	            _this.gl.uniform3fv(sphereUniform, new Float32Array(Vector_1.default.push(currSphere.specular, [])));
+	            // Sending Phong exponent to the shader
+	            sphereUniform = _this.gl.getUniformLocation(_this.shaderProgram, 'sphereRoughness[' + index + ']');
+	            _this.gl.uniform1f(sphereUniform, currSphere.roughness);
+	        });
 	        // Get camera corners
 	        corners = [];
 	        cameraTopLeft = Vector_1.default.add(this.camera.forward, Vector_1.default.subtract(this.camera.up, Vector_1.default.scale(AspRat, this.camera.right)));
@@ -209,6 +238,8 @@
 	        this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array(corners), this.gl.STATIC_DRAW);
 	        // Draw new frame
 	        this.gl.drawArrays(this.gl.TRIANGLE_STRIP, 0, 4);
+	        // Render loop
+	        window.requestAnimationFrame(function () { _this.render(animate); });
 	    };
 	    return Raytracer;
 	}());
@@ -237,6 +268,11 @@
 	        this.y = y;
 	        this.z = z;
 	    }
+	    Vector.prototype.set = function (x, y, z) {
+	        this.x = x;
+	        this.y = y;
+	        this.z = z;
+	    };
 	    Vector.scale = function (k, v) {
 	        return new Vector(k * v.x, k * v.y, k * v.z);
 	    };
@@ -329,7 +365,7 @@
 	/* VERTEX SHADER */
 	VERTEX_SHADER = "\n  precision mediump float;\n\n  attribute vec2 aWindowPosition;\n  attribute vec3 aPosition;\n\n  varying vec3 vPosition;\n\n  void main() {\n    gl_Position = vec4(aWindowPosition, 1., 1.);\n    vPosition = aPosition;\n  }\n";
 	/* FRAGMENT SHADER */
-	FRAGMENT_SHADER = "\n  precision mediump float;\n\n  varying vec3 vPosition;\n\n  uniform vec3 cameraPos;\n  uniform int numLights;\n  uniform vec3 lightPos[32];\n  uniform vec3 lightCol[32];\n  uniform float intensities[32];\n\n  /**\n  * Intersection test for spheres\n  */\n  float intersectSphere(vec3 rayStart, vec3 rayDir, vec3 center, float r) {\n    vec3 at;\n    float v;\n    float dist;\n    float disc;\n\n    at = center - rayStart;\n    v = dot(at, rayDir);\n    dist = -1.;\n    if( v >= 0. ) {\n      disc = r * r - ( dot(at, at) - v * v );\n      if( disc > 0. ) dist = v - sqrt(disc);\n    }\n    return dist;\n  }\n\n  /**\n  * Color sphere\n  */\n  vec3 colorSphere(vec3 pos, vec3 viewDir, vec3 diffColor, vec3 specColor) {\n    vec3 color = vec3(0.);\n    for ( int i = 0; i < 32; i++ ) {\n      if( i > numLights ) continue;\n\n      vec3 currPos;\n      vec3 currColor;\n      float intensity;\n      vec3 lightDir;\n      float distance;\n      float lambertian;\n      vec3 H;\n      float specular;\n\n      currPos = lightPos[i];\n      currColor = lightCol[i];\n      intensity = intensities[i];\n\n      lightDir = normalize(currPos - pos);\n      distance = length(currPos - pos);\n\n      lambertian = intensity * clamp( dot(normalize(pos), lightDir), 0.2, 1. ) / distance;\n\n      H = normalize(reflect(lightDir, pos) + viewDir);\n      specular = intensity * clamp( pow(dot(normalize(pos), H), 50.), 0.01, 1.) / distance / distance;\n\n      color += (lambertian * diffColor + specular * specColor) * currColor;\n\n    }\n\n    return color;\n  }\n\n\n  /**\n  * main function\n  */\n  void main() {\n    vec3 cameraDir;\n    float dist;\n    vec3 color;\n\n    cameraDir = normalize(vPosition - cameraPos);\n    dist = intersectSphere(cameraPos, cameraDir, vec3(0.), 0.5);\n\n    if( dist > 0. ) {\n      vec3 pos = cameraPos + dist * cameraDir;\n      color = colorSphere( pos, -1.*cameraDir, vec3(0.1, 0.5, 1.), vec3(0.9) );\n      gl_FragColor = vec4(color, 1.);\n    }\n    else {\n      gl_FragColor = vec4(0., 0., 0., 1.);\n    }\n  }\n";
+	FRAGMENT_SHADER = "\n  precision mediump float;\n\n  varying vec3 vPosition;\n\n  uniform vec3 cameraPos;\n  uniform int numLights;\n  uniform vec3 lightPos[32];\n  uniform vec3 lightCol[32];\n  uniform float intensities[32];\n  uniform int numSpheres;\n  uniform vec3 spherePos[32];\n  uniform float sphereRadius[32];\n  uniform vec3 sphereDiff[32];\n  uniform vec3 sphereSpec[32];\n  uniform float sphereRoughness[32];\n\n  /**\n  * Intersection test for spheres\n  */\n  float intersectSphere(vec3 rayStart, vec3 rayDir, vec3 center, float r) {\n    vec3 at;\n    float v;\n    float dist;\n    float disc;\n\n    at = center - rayStart;\n    v = dot(at, rayDir);\n    dist = -1.;\n    if( v >= 0. ) {\n      disc = r * r - ( dot(at, at) - v * v );\n      if( disc > 0. ) dist = v - sqrt(disc);\n    }\n    return dist;\n  }\n\n  /**\n  * Color fragment using Blinn-Phong global illumination model\n  */\n  vec3 getNaturalColor( vec3 pos,\n                        vec3 normal,\n                        vec3 viewDir,\n                        vec3 diffColor,\n                        vec3 specColor,\n                        float roughness )\n  {\n    vec3 color = vec3(0.);\n    for ( int i = 0; i < 32; i++ ) {\n      if( i > numLights ) continue;\n\n      vec3 currPos;\n      vec3 currColor;\n      float intensity;\n      vec3 lightDir;\n      float distance;\n      float lambertian;\n      vec3 H;\n      float specular;\n\n      lightDir = normalize(lightPos[i] - pos);\n      distance = length(lightPos[i] - pos);\n\n      lambertian = intensities[i] * clamp( dot(normal, lightDir), 0.2, 1. ) / distance;\n\n      H = normalize(reflect(lightDir, pos) + viewDir);\n      specular = intensities[i] * clamp( pow(dot(normal, H), 50.), 0.01, 1.) / distance / distance;\n\n      color += (lambertian * diffColor + specular * specColor) * lightCol[i];\n    }\n    return color;\n  }\n\n  /**\n  * Intersection test for the world\n  * returns a color vector\n  */\n  vec3 intersectWorld(vec3 rayStart, vec3 rayDir) {\n    vec3 color;\n    float closestDist;\n\n    color = vec3(0.);\n    closestDist = 100000.;\n\n    for( int i = 0; i < 32; i++ ) {\n      if( i > numSpheres ) continue;\n\n      float dist;\n      dist = intersectSphere(rayStart, rayDir, spherePos[i], sphereRadius[i]);\n\n      if( dist > 0. && dist < closestDist ) {\n        vec3 pos;\n        vec3 normal;\n        pos = dist * rayDir + rayStart;\n        normal = normalize(pos - spherePos[i]);\n        color = getNaturalColor(pos, normal, -rayDir, sphereDiff[i], sphereSpec[i], sphereRoughness[i]);\n        closestDist = dist;\n      }\n    }\n\n    return color;\n  }\n\n  /**\n  * main function\n  */\n  void main() {\n    vec3 cameraDir;\n    vec3 color;\n\n    cameraDir = normalize(vPosition - cameraPos);\n    color = intersectWorld(cameraPos, cameraDir);\n\n    gl_FragColor = vec4(color, 1.);\n  }\n";
 	/****************************************************/
 	/*
 	* This function loads the shader from the source code
@@ -406,6 +442,41 @@
 	}());
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.default = Light;
+
+
+/***/ },
+/* 6 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/*
+	
+	WebGL Raytracer
+	---------------
+	
+	Sphere object:
+	- contains information that will be passed to the GPU for each sphere object
+	
+	*/
+	"use strict";
+	var Vector_1 = __webpack_require__(2);
+	/*
+	* Sphere object
+	*
+	* @class Sphere
+	*/
+	var Sphere = (function () {
+	    function Sphere(params) {
+	        this.position = params.pos;
+	        this.radius = params.radius;
+	        this.diffuse = params.diffuse;
+	        this.specular = params.specular === undefined ?
+	            new Vector_1.default(0.9, 0.9, 0.9) : params.specular;
+	        this.roughness = params.roughness;
+	    }
+	    return Sphere;
+	}());
+	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.default = Sphere;
 
 
 /***/ }

@@ -14,6 +14,10 @@ export default class Vector {
               public y: number,
               public z: number) {}
 
+  public set(x: number, y: number, z: number) {
+    this.x = x; this.y = y; this.z = z;
+  }
+
   static scale(k: number, v: Vector): Vector {
     return new Vector(k*v.x, k*v.y, k*v.z)
   }

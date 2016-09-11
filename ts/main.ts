@@ -12,6 +12,7 @@ Main program
 import Raytracer from "./Raytracer";
 import Vector from "./Vector";
 import Light from "./Light";
+import Sphere from "./Sphere";
 
 function main(): void {
   let canvas: HTMLCanvasElement;
@@ -25,9 +26,18 @@ function main(): void {
   raytracer = new Raytracer(canvas);
   raytracer.setLookAt(0, 0, 10, 0, 0, 0);
   raytracer.lights.push(
-    new Light({ pos: new Vector(-1, 2, 2), color: new Vector(1, 1, 1), intensity: 2 }),
-    new Light({ pos: new Vector(8, 5, 2), color: new Vector(1., 0.5, 0), intensity: 10 })
+    new Light({ pos: new Vector(5, 20, 20), color: new Vector(1, 1, 1), intensity: 20 }),
+    new Light({ pos: new Vector(3, 22, 18), color: new Vector(1, 0.7, 0.5), intensity: 20 })
   );
-  setTimeout(() => { raytracer.render(); }, 100);
+  raytracer.spheres.push(
+    new Sphere({ pos: new Vector(0.25, 0, 1), diffuse: new Vector(1, 0.7, 0.3), radius: 0.5, roughness: 250 }),
+    new Sphere({ pos: new Vector(-0.5, -0.5, 0), diffuse: new Vector(1, 0.3, 0.3), radius: 0.5, roughness: 150 })
+  );
+  setTimeout(() => { raytracer.render(animate); }, 100);
 }
+
+
+function animate(raytracer: Raytracer): void {
+}
+
 window.onload = (event: Event): void => main();

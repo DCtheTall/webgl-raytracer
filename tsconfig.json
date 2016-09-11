@@ -14,6 +14,7 @@
     "./ts/Vector.ts",
     "./ts/Camera.ts",
     "./ts/Shaders.ts",
-    "./ts/Light.ts"
+    "./ts/Light.ts",
+    "./ts/Sphere.ts"
   ]
 }

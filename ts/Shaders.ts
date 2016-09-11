@@ -48,6 +48,12 @@ FRAGMENT_SHADER = `
   uniform vec3 lightPos[32];
   uniform vec3 lightCol[32];
   uniform float intensities[32];
+  uniform int numSpheres;
+  uniform vec3 spherePos[32];
+  uniform float sphereRadius[32];
+  uniform vec3 sphereDiff[32];
+  uniform vec3 sphereSpec[32];
+  uniform float sphereRoughness[32];
 
   /**
   * Intersection test for spheres
@@ -69,9 +75,15 @@ FRAGMENT_SHADER = `
   }
 
   /**
-  * Color sphere
+  * Color fragment using Blinn-Phong global illumination model
   */
-  vec3 colorSphere(vec3 pos, vec3 viewDir, vec3 diffColor, vec3 specColor) {
+  vec3 getNaturalColor( vec3 pos,
+                        vec3 normal,
+                        vec3 viewDir,
+                        vec3 diffColor,
+                        vec3 specColor,
+                        float roughness )
+  {
     vec3 color = vec3(0.);
     for ( int i = 0; i < 32; i++ ) {
       if( i > numLights ) continue;
@@ -85,45 +97,60 @@ FRAGMENT_SHADER = `
       vec3 H;
       float specular;
 
-      currPos = lightPos[i];
-      currColor = lightCol[i];
-      intensity = intensities[i];
+      lightDir = normalize(lightPos[i] - pos);
+      distance = length(lightPos[i] - pos);
 
-      lightDir = normalize(currPos - pos);
-      distance = length(currPos - pos);
-
-      lambertian = intensity * clamp( dot(normalize(pos), lightDir), 0.2, 1. ) / distance;
+      lambertian = intensities[i] * clamp( dot(normal, lightDir), 0.2, 1. ) / distance;
 
       H = normalize(reflect(lightDir, pos) + viewDir);
-      specular = intensity * clamp( pow(dot(normalize(pos), H), 50.), 0.01, 1.) / distance / distance;
+      specular = intensities[i] * clamp( pow(dot(normal, H), 50.), 0.01, 1.) / distance / distance;
 
-      color += (lambertian * diffColor + specular * specColor) * currColor;
+      color += (lambertian * diffColor + specular * specColor) * lightCol[i];
+    }
+    return color;
+  }
 
+  /**
+  * Intersection test for the world
+  * returns a color vector
+  */
+  vec3 intersectWorld(vec3 rayStart, vec3 rayDir) {
+    vec3 color;
+    float closestDist;
+
+    color = vec3(0.);
+    closestDist = 100000.;
+
+    for( int i = 0; i < 32; i++ ) {
+      if( i > numSpheres ) continue;
+
+      float dist;
+      dist = intersectSphere(rayStart, rayDir, spherePos[i], sphereRadius[i]);
+
+      if( dist > 0. && dist < closestDist ) {
+        vec3 pos;
+        vec3 normal;
+        pos = dist * rayDir + rayStart;
+        normal = normalize(pos - spherePos[i]);
+        color = getNaturalColor(pos, normal, -rayDir, sphereDiff[i], sphereSpec[i], sphereRoughness[i]);
+        closestDist = dist;
+      }
     }
 
     return color;
   }
-
 
   /**
   * main function
   */
   void main() {
     vec3 cameraDir;
-    float dist;
     vec3 color;
 
     cameraDir = normalize(vPosition - cameraPos);
-    dist = intersectSphere(cameraPos, cameraDir, vec3(0.), 0.5);
+    color = intersectWorld(cameraPos, cameraDir);
 
-    if( dist > 0. ) {
-      vec3 pos = cameraPos + dist * cameraDir;
-      color = colorSphere( pos, -1.*cameraDir, vec3(0.1, 0.5, 1.), vec3(0.9) );
-      gl_FragColor = vec4(color, 1.);
-    }
-    else {
-      gl_FragColor = vec4(0., 0., 0., 1.);
-    }
+    gl_FragColor = vec4(color, 1.);
   }
 `;
 
