@@ -75,6 +75,25 @@ FRAGMENT_SHADER = `
   }
 
   /**
+  * Intersection test for shadows
+  */
+  bool determineShadow(float distanceToLight, vec3 rayStart, vec3 rayDir) {
+    float closestDist;
+
+    closestDist = distanceToLight;
+    for( int i = 0; i < 32; i++ ) {
+      if( i > numSpheres ) continue;
+
+      float dist;
+
+      dist = intersectSphere(rayStart, rayDir, spherePos[i], sphereRadius[i]);
+      if( dist > 0. && dist < closestDist ) return true;
+    }
+
+    return false;
+  }
+
+  /**
   * Color fragment using Blinn-Phong global illumination model
   */
   vec3 getNaturalColor( vec3 pos,
@@ -93,6 +112,9 @@ FRAGMENT_SHADER = `
       float intensity;
       vec3 lightDir;
       float distance;
+      bool isInShadow;
+      float max;
+      vec3 testColor;
       float lambertian;
       vec3 H;
       float specular;
@@ -100,10 +122,19 @@ FRAGMENT_SHADER = `
       lightDir = normalize(lightPos[i] - pos);
       distance = length(lightPos[i] - pos);
 
-      lambertian = intensities[i] * clamp( dot(normal, lightDir), 0.2, 1. ) / distance;
+      isInShadow = determineShadow(distance, pos, lightDir);
+
+      if( isInShadow ) {
+        max = 0.35;
+      }
+      else {
+        max = 1.;
+      }
+
+      lambertian = clamp(intensities[i] * dot(normal, lightDir) / distance, 0.2, max);
 
       H = normalize(reflect(lightDir, pos) + viewDir);
-      specular = intensities[i] * clamp( pow(dot(normal, H), 50.), 0.01, 1.) / distance / distance;
+      specular = clamp(intensities[i] * pow(dot(normal, H), roughness) / distance / distance, 0.01, max);
 
       color += (lambertian * diffColor + specular * specColor) * lightCol[i];
     }
@@ -114,8 +145,7 @@ FRAGMENT_SHADER = `
   * Intersection test for the world
   * returns a color vector
   */
-  vec3 intersectWorld(vec3 rayStart, vec3 rayDir) {
-    vec3 color;
+  float intersectWorld(vec3 rayStart, vec3 rayDir, out vec3 color) {
     float closestDist;
 
     color = vec3(0.);
@@ -137,7 +167,7 @@ FRAGMENT_SHADER = `
       }
     }
 
-    return color;
+    return closestDist;
   }
 
   /**
@@ -146,9 +176,10 @@ FRAGMENT_SHADER = `
   void main() {
     vec3 cameraDir;
     vec3 color;
+    float dist;
 
     cameraDir = normalize(vPosition - cameraPos);
-    color = intersectWorld(cameraPos, cameraDir);
+    dist = intersectWorld(cameraPos, cameraDir, color);
 
     gl_FragColor = vec4(color, 1.);
   }

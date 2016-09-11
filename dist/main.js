@@ -11,12 +11,13 @@ function main() {
     canvas.height = 500;
     document.getElementById('container').appendChild(canvas);
     raytracer = new Raytracer_1.default(canvas);
-    raytracer.setLookAt(0, 0, 10, 0, 0, 0);
-    raytracer.lights.push(new Light_1.default({ pos: new Vector_1.default(5, 20, 20), color: new Vector_1.default(1, 1, 1), intensity: 20 }), new Light_1.default({ pos: new Vector_1.default(3, 22, 18), color: new Vector_1.default(1, 0.7, 0.5), intensity: 20 }));
-    raytracer.spheres.push(new Sphere_1.default({ pos: new Vector_1.default(0.25, 0, 1), diffuse: new Vector_1.default(1, 0.7, 0.3), radius: 0.5, roughness: 250 }), new Sphere_1.default({ pos: new Vector_1.default(-0.5, -0.5, 0), diffuse: new Vector_1.default(1, 0.3, 0.3), radius: 0.5, roughness: 150 }));
+    raytracer.setLookAt(0, -2, 10, 0, 0, 0);
+    raytracer.lights.push(new Light_1.default({ pos: new Vector_1.default(5, 5, 30), color: new Vector_1.default(1, 1, 1), intensity: 25 }), new Light_1.default({ pos: new Vector_1.default(3, 22, 25), color: new Vector_1.default(1, 0.7, 0.5), intensity: 20 }));
+    raytracer.spheres.push(new Sphere_1.default({ pos: new Vector_1.default(0.25, 0, 1), diffuse: new Vector_1.default(0.5, 0.5, 1), radius: 0.5, roughness: 250 }), new Sphere_1.default({ pos: new Vector_1.default(-0.5, -0.5, 0), diffuse: new Vector_1.default(1, 0.3, 0.3), radius: 0.5, roughness: 150 }));
     setTimeout(function () { raytracer.render(animate); }, 100);
 }
 function animate(raytracer) {
+    raytracer.spheres[0].position.set(0.25, 0.5 * Math.sin(new Date().getTime() / 1000), 1);
 }
 window.onload = function (event) { return main(); };
 //# sourceMappingURL=main.js.map
