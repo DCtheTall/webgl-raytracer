@@ -26,7 +26,7 @@ function main(): void {
   raytracer = new Raytracer(canvas);
   raytracer.setLookAt(0, -2, 10, 0, 0, 0);
   raytracer.lights.push(
-    new Light({ pos: new Vector(5, 5, 30), color: new Vector(1, 1, 1), intensity: 25 }),
+    new Light({ pos: new Vector(5, 2, 10), color: new Vector(1, 1, 1), intensity: 10 }),
     new Light({ pos: new Vector(3, 22, 25), color: new Vector(1, 0.7, 0.5), intensity: 20 })
   );
   raytracer.spheres.push(
