@@ -55,6 +55,24 @@ FRAGMENT_SHADER = `
   uniform vec3 sphereSpec[32];
   uniform float sphereRoughness[32];
 
+  const int numReflections = 3;
+
+  /**
+  * Intersection test for a plane at y = 0
+  */
+  float intersectPlane(vec3 rayStart, vec3 rayDir) {
+    float dist;
+    float denom;
+
+    dist = -1.;
+    denom = dot(rayDir, vec3(0., 1., 0.));
+    if( denom < 0. ) {
+      dist = dot(-rayStart, vec3(0., 1., 0.)) / denom;
+    }
+
+    return dist;
+  }
+
   /**
   * Intersection test for spheres
   */
@@ -75,9 +93,9 @@ FRAGMENT_SHADER = `
   }
 
   /**
-  * Intersection test for shadows
+  * Test for shadow casting implements pyramid tracing to soften shadow edges
   */
-  void determineShadow( inout bool inShadow[4],
+  void testForShadow( inout bool inShadow[4],
                         float distanceToLight,
                         vec3 rayStart,
                         vec3 rayDir,
@@ -89,18 +107,18 @@ FRAGMENT_SHADER = `
 
     dx = cross(normal, rayDir);
     if( length(dx) != 0. ) dx = normalize(dx);
-    dy = cross(rayDir, dx);
+    dy = cross(normal, dx);
     if( length(dy) != 0. ) dy = normalize(dy);
-    r = 0.025;
+    r = 0.02;
 
     for( int j = 0; j < 4; j++ )
     for( int i = 0; i < 32; i++ ) {
-      if( i > numSpheres ) continue;
+      if( i >= numSpheres ) continue;
 
       vec3 ds;
       float dist;
 
-      if( j == 0 ){ ds = r * -dx - dy; }
+      if( j == 0 ){ ds = -dx - dy; }
       else if( j == 1 ){ ds = dx - dy; }
       else if( j == 2 ){ ds = dy - dx; }
       else { ds = dy + dx; }
@@ -123,7 +141,7 @@ FRAGMENT_SHADER = `
   {
     vec3 color = vec3(0.);
     for ( int i = 0; i < 32; i++ ) {
-      if( i > numLights ) continue;
+      if( i >= numLights ) continue;
 
       vec3 currPos;
       vec3 currColor;
@@ -141,24 +159,76 @@ FRAGMENT_SHADER = `
       lightDir = normalize(lightPos[i] - pos);
       distance = length(lightPos[i] - pos);
 
-      determineShadow(isInShadow, distance, pos, lightDir, normal);
+      testForShadow(isInShadow, distance, pos, lightDir, normal);
 
       lMax = 1.; sMax = 1.;
 
       for( int j = 0; j < 4; j++ ) {
         if( isInShadow[j] ) {
-          lMax -= 0.15;
+          lMax -= 0.2;
           sMax -= 0.2475;
         }
       }
 
       lambertian = clamp(intensities[i] * dot(normal, lightDir) / distance, 0.2, lMax);
 
-      H = normalize(reflect(lightDir, pos) + viewDir);
+      H = normalize(lightDir + viewDir);
       specular = clamp(intensities[i] * pow(dot(normal, H), roughness) / distance / distance, 0.01, sMax);
 
       color += (lambertian * diffColor + specular * specColor) * lightCol[i];
     }
+    return color;
+  }
+
+  /**
+  * Get reflected color
+  */
+  vec3 getReflectedColor(vec3 reflStart, vec3 reflNormal, vec3 rayDir, float refl) {
+    vec3 color;
+    float closestDist;
+    vec3 reflDir;
+    float dist;
+    vec3 pos;
+    vec3 normal;
+    vec3 diffCol;
+    vec3 specCol;
+    float rough;
+
+    color = vec3(0.);
+    closestDist = 100000.;
+    reflDir = reflect(rayDir, reflNormal);
+
+    dist = intersectPlane(reflStart, reflDir);
+    if( dist > 0. ) {
+      closestDist = dist;
+      pos = dist * reflDir + reflStart;
+      normal = vec3(0., 1., 0.);
+      diffCol = vec3(0.5);
+      specCol = vec3(0.75);
+      rough = 250.;
+    }
+
+    for( int i = 0; i < 32; i++ ) {
+      if( i >= numSpheres ) continue;
+
+      float distance;
+      distance = intersectSphere(reflStart, reflDir, spherePos[i], sphereRadius[i]);
+      if( distance >= 0. && distance < closestDist ) {
+        dist = distance;
+        closestDist = dist;
+        pos = dist * reflDir + reflStart;
+        normal = normalize(pos - spherePos[i]);
+        diffCol = sphereDiff[i];
+        specCol = sphereSpec[i];
+        rough = sphereRoughness[i];
+      }
+    }
+
+    if( dist > 0. ) {
+      color = getNaturalColor(pos, normal, -reflDir, diffCol, specCol, rough);
+      color *= refl;
+    }
+
     return color;
   }
 
@@ -169,24 +239,46 @@ FRAGMENT_SHADER = `
   vec3 intersectWorld(vec3 rayStart, vec3 rayDir) {
     vec3 color;
     float closestDist;
+    float dist;
+    vec3 pos;
+    vec3 normal;
+    vec3 diffCol;
+    vec3 specCol;
+    float rough;
 
     color = vec3(0.);
     closestDist = 100000.;
 
+    dist = intersectPlane(rayStart, rayDir);
+    if( dist > 0. ) {
+      closestDist = dist;
+      pos = dist * rayDir + rayStart;
+      normal = vec3(0., 1., 0.);
+      diffCol = vec3(0.5);
+      specCol = vec3(0.75);
+      rough = 250.;
+    }
+
     for( int i = 0; i < 32; i++ ) {
-      if( i > numSpheres ) continue;
+      if( i >= numSpheres ) continue;
 
-      float dist;
-      dist = intersectSphere(rayStart, rayDir, spherePos[i], sphereRadius[i]);
+      float distance;
+      distance = intersectSphere(rayStart, rayDir, spherePos[i], sphereRadius[i]);
 
-      if( dist > 0. && dist < closestDist ) {
-        vec3 pos;
-        vec3 normal;
-        pos = dist * rayDir + rayStart;
+      if( distance > 0. && distance < closestDist ) {
+        dist = distance;
+        closestDist = distance;
+        pos = distance * rayDir + rayStart;
         normal = normalize(pos - spherePos[i]);
-        color = getNaturalColor(pos, normal, -rayDir, sphereDiff[i], sphereSpec[i], sphereRoughness[i]);
-        closestDist = dist;
+        diffCol = sphereDiff[i];
+        specCol = sphereSpec[i];
+        rough = sphereRoughness[i];
       }
+    }
+
+    if( dist > 0. ) {
+      color = getNaturalColor(pos, normal, -rayDir, diffCol, specCol, rough);
+      color += getReflectedColor(pos, normal, rayDir, 0.25);
     }
 
     return color;

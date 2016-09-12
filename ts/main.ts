@@ -24,21 +24,23 @@ function main(): void {
   document.getElementById('container').appendChild(canvas);
 
   raytracer = new Raytracer(canvas);
-  raytracer.setLookAt(0, -2, 10, 0, 0, 0);
+  raytracer.setLookAt(0, 2, 10, 0, 2, 0);
+  raytracer.ANIMATE = true;
   raytracer.lights.push(
-    new Light({ pos: new Vector(5, 2, 10), color: new Vector(1, 1, 1), intensity: 10 }),
-    new Light({ pos: new Vector(3, 22, 25), color: new Vector(1, 0.7, 0.5), intensity: 20 })
+    new Light({ pos: new Vector(5, 5, 10), color: new Vector(0.7, 0.7, 0.7), intensity: 15 }),
+    new Light({ pos: new Vector(0, 8, 2), color: new Vector(1, 0.7, 0.5), intensity: 4 }),
+    new Light({ pos: new Vector(-2, 4, -10), color: new Vector(0.5, 0.5, 1), intensity: 2 })
   );
   raytracer.spheres.push(
-    new Sphere({ pos: new Vector(0.25, 0, 1), diffuse: new Vector(0.5, 0.5, 1), radius: 0.5, roughness: 250 }),
-    new Sphere({ pos: new Vector(-0.5, -0.5, 0), diffuse: new Vector(1, 0.3, 0.3), radius: 0.5, roughness: 150 })
+    new Sphere({ pos: new Vector(0.5, 0.6, 1), diffuse: new Vector(0.5, 0.5, 1), radius: 0.4, roughness: 250 }),
+    new Sphere({ pos: new Vector(-0.5, 0.4, 0), diffuse: new Vector(1, 0.3, 0.3), radius: 0.4, roughness: 150 })
   );
   setTimeout(() => { raytracer.render(animate); }, 100);
 }
 
 
 function animate(raytracer: Raytracer): void {
-  raytracer.spheres[0].position.set(0.25, 0.5 * Math.sin(new Date().getTime() / 1000), 1);
+  raytracer.spheres[0].position.set(Math.sin(new Date().getTime() / 1000), 0.6, 1);
 }
 
 window.onload = (event: Event): void => main();
