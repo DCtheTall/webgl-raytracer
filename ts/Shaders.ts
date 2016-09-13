@@ -184,6 +184,8 @@ FRAGMENT_SHADER = `
   * Get reflected color
   */
   vec3 getReflectedColor(vec3 reflStart, vec3 reflNormal, vec3 rayDir, float refl) {
+    const int MAX_DEPTH = 3;
+
     vec3 color;
     float closestDist;
     vec3 reflDir;
@@ -195,38 +197,46 @@ FRAGMENT_SHADER = `
     float rough;
 
     color = vec3(0.);
-    closestDist = 100000.;
-    reflDir = reflect(rayDir, reflNormal);
 
-    dist = intersectPlane(reflStart, reflDir);
-    if( dist > 0. ) {
-      closestDist = dist;
-      pos = dist * reflDir + reflStart;
-      normal = vec3(0., 1., 0.);
-      diffCol = vec3(0.5);
-      specCol = vec3(0.75);
-      rough = 250.;
-    }
+    for( int i = 0; i <= MAX_DEPTH; i++ ) {
+      closestDist = 100000.;
+      reflDir = reflect(rayDir, reflNormal);
 
-    for( int i = 0; i < 32; i++ ) {
-      if( i >= numSpheres ) continue;
-
-      float distance;
-      distance = intersectSphere(reflStart, reflDir, spherePos[i], sphereRadius[i]);
-      if( distance >= 0. && distance < closestDist ) {
-        dist = distance;
+      dist = intersectPlane(reflStart, reflDir);
+      if( dist > 0. ) {
         closestDist = dist;
         pos = dist * reflDir + reflStart;
-        normal = normalize(pos - spherePos[i]);
-        diffCol = sphereDiff[i];
-        specCol = sphereSpec[i];
-        rough = sphereRoughness[i];
+        normal = vec3(0., 1., 0.);
+        diffCol = vec3(0.5);
+        specCol = vec3(0.75);
+        rough = 250.;
       }
-    }
 
-    if( dist > 0. ) {
-      color = getNaturalColor(pos, normal, -reflDir, diffCol, specCol, rough);
-      color *= refl;
+      for( int i = 0; i < 32; i++ ) {
+        if( i >= numSpheres ) continue;
+
+        float distance;
+        distance = intersectSphere(reflStart, reflDir, spherePos[i], sphereRadius[i]);
+        if( distance >= 0. && distance < closestDist ) {
+          dist = distance;
+          closestDist = dist;
+          pos = dist * reflDir + reflStart;
+          normal = normalize(pos - spherePos[i]);
+          diffCol = sphereDiff[i];
+          specCol = sphereSpec[i];
+          rough = sphereRoughness[i];
+        }
+      }
+
+      if( dist > 0. ) {
+        vec3 c = getNaturalColor(pos, normal, -reflDir, diffCol, specCol, rough);
+        color += pow(refl, float(i+1)) * c;
+
+        reflStart = pos;
+        reflNormal = normal;
+        rayDir = reflDir;
+      }
+      else break;
     }
 
     return color;
@@ -245,6 +255,7 @@ FRAGMENT_SHADER = `
     vec3 diffCol;
     vec3 specCol;
     float rough;
+    float refl;
 
     color = vec3(0.);
     closestDist = 100000.;
@@ -257,6 +268,7 @@ FRAGMENT_SHADER = `
       diffCol = vec3(0.5);
       specCol = vec3(0.75);
       rough = 250.;
+      refl = 0.1;
     }
 
     for( int i = 0; i < 32; i++ ) {
@@ -273,12 +285,13 @@ FRAGMENT_SHADER = `
         diffCol = sphereDiff[i];
         specCol = sphereSpec[i];
         rough = sphereRoughness[i];
+        refl = 0.4;
       }
     }
 
     if( dist > 0. ) {
       color = getNaturalColor(pos, normal, -rayDir, diffCol, specCol, rough);
-      color += getReflectedColor(pos, normal, rayDir, 0.25);
+      color += getReflectedColor(pos, normal, rayDir, refl);
     }
 
     return color;

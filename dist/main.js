@@ -7,8 +7,8 @@ function main() {
     var canvas;
     var raytracer;
     canvas = document.createElement("canvas");
-    canvas.width = 700;
-    canvas.height = 500;
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
     document.getElementById('container').appendChild(canvas);
     raytracer = new Raytracer_1.default(canvas);
     raytracer.setLookAt(0, 2, 10, 0, 2, 0);

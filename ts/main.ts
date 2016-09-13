@@ -19,8 +19,8 @@ function main(): void {
   let raytracer: Raytracer;
 
   canvas = document.createElement("canvas");
-  canvas.width = 700;
-  canvas.height = 500;
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
   document.getElementById('container').appendChild(canvas);
 
   raytracer = new Raytracer(canvas);
