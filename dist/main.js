@@ -18,7 +18,7 @@ function main() {
     raytracer.ANIMATE = true;
     raytracer.lights.push(new Light_1.default({ pos: new Vector_1.default(0, 8, 8), color: new Vector_1.default(0.3, 0.5, 0.3), intensity: 10 }), new Light_1.default({ pos: new Vector_1.default(6, 5, 10), color: new Vector_1.default(1, 0.7, 0.5), intensity: 10 }), new Light_1.default({ pos: new Vector_1.default(-5, 1, 2), color: new Vector_1.default(0.5, 0.5, 1), intensity: 8 }));
     raytracer.spheres.push(new Sphere_1.default({
-        pos: new Vector_1.default(-0.1 + 1.3 * Math.sin(Math.PI / 5), 0.5, 1.3 * Math.cos(Math.PI / 5)),
+        pos: new Vector_1.default(-0.3 + 1.5 * Math.sin(0.1 * Math.PI), 0.6, 1.5 * Math.cos(0.1 * Math.PI)),
         diffuse: new Vector_1.default(0.3, 0.5, 0.7),
         specular: new Vector_1.default(1, 1, 1),
         radius: 0.3,
@@ -26,11 +26,11 @@ function main() {
         refractiveIndex: 2.6,
         opacity: 0.5
     }), new Sphere_1.default({
-        pos: new Vector_1.default(-0.25, 0.6, 0),
+        pos: new Vector_1.default(-0.3, 0.5, 0),
         diffuse: new Vector_1.default(1, 0.5, 0.3),
         radius: 0.5,
         shininess: 50,
-        refractiveIndex: 2,
+        refractiveIndex: 2.4,
         opacity: 0.8
     }));
     setTimeout(function () { raytracer.render(animate); }, 100);
