@@ -23,7 +23,7 @@ function main() {
         refractiveIndex: 2
     }), new Sphere_1.default({
         pos: new Vector_1.default(-0.5, 0.4, 0),
-        diffuse: new Vector_1.default(1, 0.3, 0.3),
+        diffuse: new Vector_1.default(1, 0.4, 0.3),
         radius: 0.4,
         shininess: 50,
         refractiveIndex: 1.5

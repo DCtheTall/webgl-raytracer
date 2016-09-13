@@ -42,7 +42,7 @@ function main(): void {
     }),
     new Sphere({
       pos: new Vector(-0.5, 0.4, 0),
-      diffuse: new Vector(1, 0.3, 0.3),
+      diffuse: new Vector(1, 0.4, 0.3),
       radius: 0.4,
       shininess: 50,
       refractiveIndex: 1.5
