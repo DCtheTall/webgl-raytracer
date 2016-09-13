@@ -169,11 +169,11 @@ export default class Raytracer {
       sphereUniform = this.gl.getUniformLocation(this.shaderProgram, 'sphereSpec['+index+']');
       this.gl.uniform3fv(sphereUniform, new Float32Array(Vector.push(currSphere.specular, [])));
       // Sending Phong exponent to the shader
-      sphereUniform = this.gl.getUniformLocation(this.shaderProgram, 'sphereRoughness['+index+']');
-      this.gl.uniform1f(sphereUniform, currSphere.roughness);
-      // Sending the sphere reflecitivy to the shader
-      sphereUniform = this.gl.getUniformLocation(this.shaderProgram, 'sphereRefl['+index+']');
-      this.gl.uniform1f(sphereUniform, currSphere.reflectivity);
+      sphereUniform = this.gl.getUniformLocation(this.shaderProgram, 'sphereShininess['+index+']');
+      this.gl.uniform1f(sphereUniform, currSphere.shininess);
+      // Sending refractive index to the shader
+      sphereUniform = this.gl.getUniformLocation(this.shaderProgram, 'sphereRefrIndex['+index+']');
+      this.gl.uniform1f(sphereUniform, currSphere.refractiveIndex);
     });
 
     // Get camera corners

@@ -53,8 +53,8 @@ FRAGMENT_SHADER = `
   uniform float sphereRadius[32];
   uniform vec3 sphereDiff[32];
   uniform vec3 sphereSpec[32];
-  uniform float sphereRoughness[32];
-  uniform float sphereRefl[32];
+  uniform float sphereShininess[32];
+  uniform float sphereRefrIndex[32];
 
   const int numReflections = 3;
 
@@ -91,6 +91,31 @@ FRAGMENT_SHADER = `
       if( disc > 0. ) dist = v - sqrt(disc);
     }
     return dist;
+  }
+
+  /**
+  * Determine the reflectance of the sphere using its refractive index
+  * and the Fresnel equations
+  */
+  float determineReflectance(vec3 normal, vec3 rayDir, float refrIndex) {
+    float cosine_i;
+    float sine_i;
+    float theta_t;
+    float cosine_t;
+    float refl;
+
+    /* Snell's law to find the angle the transmitted ray makes with the normal */
+    cosine_i = dot(normalize(normal), normalize(-rayDir));
+    sine_i = length(cross( normalize(normal), normalize(-rayDir) ));
+    theta_t = asin( sine_i / refrIndex );
+    cosine_t = cos(theta_t);
+
+    /* Finding reflectance with Fresnel's equations */
+    refl = cosine_i - refrIndex * cosine_t;
+    refl /= cosine_i + refrIndex * cosine_t;
+    refl = pow(abs(refl), 2.);
+
+    return clamp(refl, 0., 1.);
   }
 
   /**
@@ -138,7 +163,7 @@ FRAGMENT_SHADER = `
                         vec3 viewDir,
                         vec3 diffColor,
                         vec3 specColor,
-                        float roughness )
+                        float shininess )
   {
     vec3 color = vec3(0.);
     for ( int i = 0; i < 32; i++ ) {
@@ -174,7 +199,7 @@ FRAGMENT_SHADER = `
       lambertian = clamp(intensities[i] * dot(normal, lightDir) / distance, 0.0, lMax);
 
       H = normalize(lightDir + viewDir);
-      specular = clamp(intensities[i] * pow(dot(normal, H), roughness) / distance / distance, 0.01, sMax);
+      specular = clamp(intensities[i] * pow(dot(normal, H), shininess) / distance / distance, 0.01, sMax);
 
       color += (lambertian * diffColor + specular * specColor) * lightCol[i];
     }
@@ -195,7 +220,7 @@ FRAGMENT_SHADER = `
     vec3 normal;
     vec3 diffCol;
     vec3 specCol;
-    float rough;
+    float shiny;
 
     color = vec3(0.);
 
@@ -213,14 +238,14 @@ FRAGMENT_SHADER = `
         if( mod(floor(pos.x) + floor(pos.z), 2.) != 0. ) {
           diffCol = vec3(0.9);
           specCol = vec3(1.);
-          if( i != 0 ) thisRefl = 0.2;
+          if( i != 0 ) thisRefl = determineReflectance(normal, rayDir, 1.2);
         }
         else {
           diffCol = vec3(0.4, 0.4, 0.6);
           specCol = vec3(0.6);
-          if( i != 0 ) thisRefl = 0.7;
+          if( i != 0 ) thisRefl = determineReflectance(normal, rayDir, 1.7);
         }
-        rough = 250.;
+        shiny = 250.;
       }
 
       for( int i = 0; i < 32; i++ ) {
@@ -235,13 +260,13 @@ FRAGMENT_SHADER = `
           normal = normalize(pos - spherePos[i]);
           diffCol = sphereDiff[i];
           specCol = sphereSpec[i];
-          rough = sphereRoughness[i];
-          if( i != 0 ) thisRefl = sphereRefl[i];
+          shiny = sphereShininess[i];
+          if( i != 0 ) determineReflectance(normal, rayDir, sphereRefrIndex[i]);
         }
       }
 
       if( dist > 0. ) {
-        vec3 c = getNaturalColor(pos, normal, -reflDir, diffCol, specCol, rough);
+        vec3 c = getNaturalColor(pos, normal, -reflDir, diffCol, specCol, shiny);
         refl *= thisRefl;
         color += pow(refl, float(i+1)) * c;
 
@@ -267,7 +292,7 @@ FRAGMENT_SHADER = `
     vec3 normal;
     vec3 diffCol;
     vec3 specCol;
-    float rough;
+    float shiny;
     float refl;
 
     color = vec3(0.);
@@ -281,14 +306,14 @@ FRAGMENT_SHADER = `
       if( mod(floor(pos.x) + floor(pos.z), 2.) != 0. ) {
         diffCol = vec3(0.9);
         specCol = vec3(1.);
-        refl = 0.2;
+        refl = determineReflectance(normal, rayDir, 1.05);
       }
       else {
-        diffCol = vec3(0.4, 0.4, 0.6);
+        diffCol = vec3(0.2, 0.2, 0.4);
         specCol = vec3(0.4);
-        refl = 0.7;
+        refl = determineReflectance(normal, rayDir, 1.2);
       }
-      rough = 250.;
+      shiny = 250.;
     }
 
     for( int i = 0; i < 32; i++ ) {
@@ -304,13 +329,13 @@ FRAGMENT_SHADER = `
         normal = normalize(pos - spherePos[i]);
         diffCol = sphereDiff[i];
         specCol = sphereSpec[i];
-        rough = sphereRoughness[i];
-        refl = sphereRefl[i];
+        shiny = sphereShininess[i];
+        refl = determineReflectance(normal, rayDir, sphereRefrIndex[i]);
       }
     }
 
     if( dist > 0. ) {
-      color = getNaturalColor(pos, normal, -rayDir, diffCol, specCol, rough);
+      color = getNaturalColor(pos, normal, -rayDir, diffCol, specCol, shiny);
       color += getReflectedColor(pos, normal, rayDir, refl);
     }
 

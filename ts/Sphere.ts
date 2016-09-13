@@ -20,8 +20,9 @@ export interface SphereParams {
   radius: number;
   diffuse: Vector;
   specular?: Vector;
-  roughness?: number;
+  shininess?: number;
   reflectivity?: number;
+  refractiveIndex?: number;
 }
 
 /*
@@ -34,8 +35,9 @@ export default class Sphere {
   public radius: number;
   public diffuse: Vector;
   public specular: Vector;
-  public roughness: number;
+  public shininess: number;
   public reflectivity: number;
+  public refractiveIndex: number;
 
   constructor(params: SphereParams) {
     this.position = params.pos;
@@ -43,9 +45,9 @@ export default class Sphere {
     this.diffuse = params.diffuse;
     this.specular = params.specular === undefined?
       new Vector(0.9, 0.9, 0.9) : params.specular;
-    this.roughness = params.roughness === undefined?
-     250 : params.roughness;
-    this.reflectivity = params.reflectivity === undefined?
-      0.4 : params.reflectivity;
+    this.shininess = params.shininess === undefined?
+     250 : params.shininess;
+    this.refractiveIndex = params.refractiveIndex === undefined?
+      1.4 : params.refractiveIndex;
   }
 }

@@ -84,10 +84,10 @@ var Raytracer = (function () {
             _this.gl.uniform3fv(sphereUniform, new Float32Array(Vector_1.default.push(currSphere.diffuse, [])));
             sphereUniform = _this.gl.getUniformLocation(_this.shaderProgram, 'sphereSpec[' + index + ']');
             _this.gl.uniform3fv(sphereUniform, new Float32Array(Vector_1.default.push(currSphere.specular, [])));
-            sphereUniform = _this.gl.getUniformLocation(_this.shaderProgram, 'sphereRoughness[' + index + ']');
-            _this.gl.uniform1f(sphereUniform, currSphere.roughness);
-            sphereUniform = _this.gl.getUniformLocation(_this.shaderProgram, 'sphereRefl[' + index + ']');
-            _this.gl.uniform1f(sphereUniform, currSphere.reflectivity);
+            sphereUniform = _this.gl.getUniformLocation(_this.shaderProgram, 'sphereShininess[' + index + ']');
+            _this.gl.uniform1f(sphereUniform, currSphere.shininess);
+            sphereUniform = _this.gl.getUniformLocation(_this.shaderProgram, 'sphereRefrIndex[' + index + ']');
+            _this.gl.uniform1f(sphereUniform, currSphere.refractiveIndex);
         });
         corners = [];
         cameraTopLeft = Vector_1.default.add(this.camera.forward, Vector_1.default.subtract(this.camera.up, Vector_1.default.scale(AspRat, this.camera.right)));
