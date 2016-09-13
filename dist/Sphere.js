@@ -7,7 +7,10 @@ var Sphere = (function () {
         this.diffuse = params.diffuse;
         this.specular = params.specular === undefined ?
             new Vector_1.default(0.9, 0.9, 0.9) : params.specular;
-        this.roughness = params.roughness;
+        this.roughness = params.roughness === undefined ?
+            250 : params.roughness;
+        this.reflectivity = params.reflectivity === undefined ?
+            0.4 : params.reflectivity;
     }
     return Sphere;
 }());

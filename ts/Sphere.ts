@@ -20,7 +20,8 @@ export interface SphereParams {
   radius: number;
   diffuse: Vector;
   specular?: Vector;
-  roughness: number;
+  roughness?: number;
+  reflectivity?: number;
 }
 
 /*
@@ -34,6 +35,7 @@ export default class Sphere {
   public diffuse: Vector;
   public specular: Vector;
   public roughness: number;
+  public reflectivity: number;
 
   constructor(params: SphereParams) {
     this.position = params.pos;
@@ -41,6 +43,9 @@ export default class Sphere {
     this.diffuse = params.diffuse;
     this.specular = params.specular === undefined?
       new Vector(0.9, 0.9, 0.9) : params.specular;
-    this.roughness = params.roughness;
+    this.roughness = params.roughness === undefined?
+     250 : params.roughness;
+    this.reflectivity = params.reflectivity === undefined?
+      0.4 : params.reflectivity;
   }
 }

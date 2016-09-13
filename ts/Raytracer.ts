@@ -171,6 +171,9 @@ export default class Raytracer {
       // Sending Phong exponent to the shader
       sphereUniform = this.gl.getUniformLocation(this.shaderProgram, 'sphereRoughness['+index+']');
       this.gl.uniform1f(sphereUniform, currSphere.roughness);
+      // Sending the sphere reflecitivy to the shader
+      sphereUniform = this.gl.getUniformLocation(this.shaderProgram, 'sphereRefl['+index+']');
+      this.gl.uniform1f(sphereUniform, currSphere.reflectivity);
     });
 
     // Get camera corners

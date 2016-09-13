@@ -54,6 +54,7 @@ FRAGMENT_SHADER = `
   uniform vec3 sphereDiff[32];
   uniform vec3 sphereSpec[32];
   uniform float sphereRoughness[32];
+  uniform float sphereRefl[32];
 
   const int numReflections = 3;
 
@@ -107,9 +108,9 @@ FRAGMENT_SHADER = `
 
     dx = cross(normal, rayDir);
     if( length(dx) != 0. ) dx = normalize(dx);
-    dy = cross(normal, dx);
+    dy = cross(rayDir, dx);
     if( length(dy) != 0. ) dy = normalize(dy);
-    r = 0.02;
+    r = 0.01;
 
     for( int j = 0; j < 4; j++ )
     for( int i = 0; i < 32; i++ ) {
@@ -170,7 +171,7 @@ FRAGMENT_SHADER = `
         }
       }
 
-      lambertian = clamp(intensities[i] * dot(normal, lightDir) / distance, 0.2, lMax);
+      lambertian = clamp(intensities[i] * dot(normal, lightDir) / distance, 0.0, lMax);
 
       H = normalize(lightDir + viewDir);
       specular = clamp(intensities[i] * pow(dot(normal, H), roughness) / distance / distance, 0.01, sMax);
@@ -199,6 +200,8 @@ FRAGMENT_SHADER = `
     color = vec3(0.);
 
     for( int i = 0; i <= MAX_DEPTH; i++ ) {
+      float thisRefl = 1.;
+
       closestDist = 100000.;
       reflDir = reflect(rayDir, reflNormal);
 
@@ -207,8 +210,16 @@ FRAGMENT_SHADER = `
         closestDist = dist;
         pos = dist * reflDir + reflStart;
         normal = vec3(0., 1., 0.);
-        diffCol = vec3(0.5);
-        specCol = vec3(0.75);
+        if( mod(floor(pos.x) + floor(pos.z), 2.) != 0. ) {
+          diffCol = vec3(0.9);
+          specCol = vec3(1.);
+          if( i != 0 ) thisRefl = 0.2;
+        }
+        else {
+          diffCol = vec3(0.4, 0.4, 0.6);
+          specCol = vec3(0.6);
+          if( i != 0 ) thisRefl = 0.7;
+        }
         rough = 250.;
       }
 
@@ -225,11 +236,13 @@ FRAGMENT_SHADER = `
           diffCol = sphereDiff[i];
           specCol = sphereSpec[i];
           rough = sphereRoughness[i];
+          if( i != 0 ) thisRefl = sphereRefl[i];
         }
       }
 
       if( dist > 0. ) {
         vec3 c = getNaturalColor(pos, normal, -reflDir, diffCol, specCol, rough);
+        refl *= thisRefl;
         color += pow(refl, float(i+1)) * c;
 
         reflStart = pos;
@@ -265,10 +278,17 @@ FRAGMENT_SHADER = `
       closestDist = dist;
       pos = dist * rayDir + rayStart;
       normal = vec3(0., 1., 0.);
-      diffCol = vec3(0.5);
-      specCol = vec3(0.75);
+      if( mod(floor(pos.x) + floor(pos.z), 2.) != 0. ) {
+        diffCol = vec3(0.9);
+        specCol = vec3(1.);
+        refl = 0.2;
+      }
+      else {
+        diffCol = vec3(0.4, 0.4, 0.6);
+        specCol = vec3(0.4);
+        refl = 0.7;
+      }
       rough = 250.;
-      refl = 0.1;
     }
 
     for( int i = 0; i < 32; i++ ) {
@@ -285,7 +305,7 @@ FRAGMENT_SHADER = `
         diffCol = sphereDiff[i];
         specCol = sphereSpec[i];
         rough = sphereRoughness[i];
-        refl = 0.4;
+        refl = sphereRefl[i];
       }
     }
 
