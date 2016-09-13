@@ -392,7 +392,7 @@ FRAGMENT_SHADER = `
         if( opacity != 1. ) {
           color *= opacity;
           vec3 refrCol;
-          refrCol = getRefractedColor(pos, -reflDir, normal, index, radius, refl * opacity);
+          refrCol = getRefractedColor(pos, -reflDir, normal, index, radius, opacity);
           refrCol *= 1. - opacity;
           color += refrCol;
         }

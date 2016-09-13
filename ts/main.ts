@@ -26,7 +26,7 @@ function main(): void {
   document.body.appendChild(canvas);
 
   raytracer = new Raytracer(canvas);
-  raytracer.setLookAt(-1, 2, 15, 0, 4, 0);
+  raytracer.setLookAt(-1, 2, 15, 0, 5, 0);
   raytracer.ANIMATE = true;
   raytracer.lights.push(
     new Light({ pos: new Vector(0, 8, 8), color: new Vector(0.3, 0.5, 0.3), intensity: 10 }),
@@ -35,11 +35,7 @@ function main(): void {
   );
   raytracer.spheres.push(
     new Sphere({
-      pos: new Vector(
-        -0.3 + 1.5 * Math.sin(0.1*Math.PI),
-        0.6,
-        1.5 * Math.cos(0.1*Math.PI)
-      ),
+      pos: new Vector(0.5, 0.5, 1.5),
       diffuse: new Vector(0.3, 0.5, 0.7),
       specular: new Vector(1, 1, 1),
       radius: 0.3,
@@ -48,12 +44,29 @@ function main(): void {
       opacity: 0.5
     }),
     new Sphere({
-      pos: new Vector(-0.3, 0.5, 0),
+      pos: new Vector(-0.3, 0.5, -1),
       diffuse: new Vector(1, 0.5, 0.3),
       radius: 0.5,
       shininess: 50,
       refractiveIndex: 2.4,
       opacity: 0.8
+    }),
+    new Sphere({
+      pos: new Vector(1.75, 0.8, -5),
+      diffuse: new Vector(0.3, 0.7, 0.3),
+      specular: new Vector(1, 1, 1),
+      radius: 0.8,
+      shininess: 500,
+      refractiveIndex: 2,
+      opacity: 0.4
+    }),
+    new Sphere({
+      pos: new Vector(-0.8, 1, 4),
+      diffuse: new Vector(1, 1, 1),
+      radius: 0.2,
+      shininess: 1000,
+      refractiveIndex: 2.6,
+      opacity: 0.3
     })
   );
   setTimeout(() => { raytracer.render(animate); }, 100);
