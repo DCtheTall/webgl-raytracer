@@ -23,6 +23,7 @@ export interface SphereParams {
   shininess?: number;
   reflectivity?: number;
   refractiveIndex?: number;
+  opacity?: number;
 }
 
 /*
@@ -38,6 +39,7 @@ export default class Sphere {
   public shininess: number;
   public reflectivity: number;
   public refractiveIndex: number;
+  public opacity: number;
 
   constructor(params: SphereParams) {
     this.position = params.pos;
@@ -49,5 +51,7 @@ export default class Sphere {
      250 : params.shininess;
     this.refractiveIndex = params.refractiveIndex === undefined?
       1.4 : params.refractiveIndex;
+    this.opacity = params.opacity === undefined?
+      1 : params.opacity
   }
 }

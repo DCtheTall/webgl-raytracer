@@ -88,6 +88,8 @@ var Raytracer = (function () {
             _this.gl.uniform1f(sphereUniform, currSphere.shininess);
             sphereUniform = _this.gl.getUniformLocation(_this.shaderProgram, 'sphereRefrIndex[' + index + ']');
             _this.gl.uniform1f(sphereUniform, currSphere.refractiveIndex);
+            sphereUniform = _this.gl.getUniformLocation(_this.shaderProgram, 'sphereOpacity[' + index + ']');
+            _this.gl.uniform1f(sphereUniform, currSphere.opacity);
         });
         corners = [];
         cameraTopLeft = Vector_1.default.add(this.camera.forward, Vector_1.default.subtract(this.camera.up, Vector_1.default.scale(AspRat, this.camera.right)));

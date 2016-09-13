@@ -55,8 +55,11 @@ FRAGMENT_SHADER = `
   uniform vec3 sphereSpec[32];
   uniform float sphereShininess[32];
   uniform float sphereRefrIndex[32];
+  uniform float sphereOpacity[32];
 
   const int numReflections = 3;
+
+  /***** INTERSECTION TESTS FOR GEOMETRIES *****/
 
   /**
   * Intersection test for a plane at y = 0
@@ -93,30 +96,7 @@ FRAGMENT_SHADER = `
     return dist;
   }
 
-  /**
-  * Determine the reflectance of the sphere using its refractive index
-  * and the Fresnel equations
-  */
-  float determineReflectance(vec3 normal, vec3 rayDir, float refrIndex) {
-    float cosine_i;
-    float sine_i;
-    float theta_t;
-    float cosine_t;
-    float refl;
-
-    /* Snell's law to find the angle the transmitted ray makes with the normal */
-    cosine_i = dot(normalize(normal), normalize(-rayDir));
-    sine_i = length(cross( normalize(normal), normalize(-rayDir) ));
-    theta_t = asin( sine_i / refrIndex );
-    cosine_t = cos(theta_t);
-
-    /* Finding reflectance with Fresnel's equations */
-    refl = cosine_i - refrIndex * cosine_t;
-    refl /= cosine_i + refrIndex * cosine_t;
-    refl = pow(abs(refl), 2.);
-
-    return clamp(refl, 0., 1.);
-  }
+  /***** OPTICAL FUNCTIONS *****/
 
   /**
   * Test for shadow casting implements pyramid tracing to soften shadow edges
@@ -154,6 +134,73 @@ FRAGMENT_SHADER = `
       if( dist > 0. && dist < distanceToLight ) inShadow[j] = true;
     }
   }
+
+  /**
+  * Determine the reflectance of the sphere using its refractive index
+  * and the Fresnel equations
+  */
+  float determineReflectance(vec3 normal, vec3 rayDir, float refrIndex) {
+    float cosine_i;
+    float sine_i;
+    float theta_t;
+    float cosine_t;
+    float refl;
+
+    /* Snell's law to find the angle the transmitted ray makes with the normal */
+    cosine_i = dot(normalize(normal), normalize(-rayDir));
+    sine_i = length(cross( normalize(normal), normalize(-rayDir) ));
+    theta_t = asin( sine_i / refrIndex );
+    cosine_t = cos(theta_t);
+
+    /* Finding reflectance with Fresnel's equations */
+    refl = cosine_i - refrIndex * cosine_t;
+    refl /= cosine_i + refrIndex * cosine_t;
+    refl = pow(abs(refl), 2.);
+
+    return clamp(refl, 0., 1.);
+  }
+
+  /**
+  * Determine the direction of the transmitted light ray
+  */
+  void transmitRay( vec3 rayStart,
+                    vec3 rayDir,
+                    vec3 opticalAxis,
+                    float refrIndex,
+                    float radius,
+                    out vec3 outStart,
+                    out vec3 outDir )
+  {
+    vec3 normalAxis;
+    vec2 opticalVec;
+    mat2 R_1;
+    mat2 T;
+    mat2 R_2;
+
+    /* Vector normal to the optical axis */
+    normalAxis = rayDir - (dot(rayDir, -opticalAxis) * opticalAxis);
+    if( length(normalAxis) != 0. ) normalAxis = normalize(normalAxis);
+
+    /* Ray transfer analysis */
+    opticalVec = vec2( 0., acos(dot(opticalAxis, -rayDir)) );
+    R_1 = mat2( 1., (1. - refrIndex)/(radius * refrIndex), 0., 1./refrIndex );
+    T = mat2( 1., 0., 2.*radius, 1. );
+    R_2 = mat2( 1., (refrIndex - 1.)/radius, 0., refrIndex );
+
+    /* First 2 transformations */
+    opticalVec = T * R_1 * opticalVec;
+
+    /* Determining the starting point of the outgoing ray */
+    outStart = rayStart - (cos(opticalVec.y) * opticalAxis) + (opticalVec.x * normalAxis);
+
+    /* Final ray transformation */
+    opticalVec = R_2 * opticalVec;
+
+    /* Determining the direction of the output ray */
+    outDir = (-cos(opticalVec.y) * opticalAxis) + (sin(opticalVec.y) * normalAxis);
+  }
+
+  /***** COLORING FUNCTIONS *****/
 
   /**
   * Color fragment using Blinn-Phong global illumination model
@@ -207,6 +254,72 @@ FRAGMENT_SHADER = `
   }
 
   /**
+  * Get refracted color of non-opaque objects
+  */
+  vec3 getRefractedColor(vec3 refrStart, vec3 rayDir, vec3 opticalAxis, float refrIndex, float radius, float opacity) {
+    vec3 color;
+    vec3 rayStart_f;
+    vec3 rayDir_f;
+    float closestDist;
+    float dist;
+    vec3 pos;
+    vec3 normal;
+    vec3 diffCol;
+    vec3 specCol;
+    float phongExp;
+    float refl;
+    float index;
+
+    color = vec3(0.);
+    transmitRay(refrStart, rayDir, opticalAxis, refrIndex, radius, rayStart_f, rayDir_f);
+
+    closestDist = 100000.;
+
+    dist = intersectPlane(rayStart_f, rayDir_f);
+    if( dist > 0. ) {
+      closestDist = dist;
+      pos = dist * rayDir_f + rayStart_f;
+      normal = vec3(0., 1., 0.);
+      if( mod(floor(pos.x) + floor(pos.z), 2.) != 0. ) {
+        diffCol = vec3(0.9);
+        specCol = vec3(1.);
+        refl = determineReflectance(normal, rayDir_f, 1.05);
+      }
+      else {
+        diffCol = vec3(0.2, 0.2, 0.4);
+        specCol = vec3(0.4);
+        refl = determineReflectance(normal, rayDir_f, 1.2);
+      }
+    }
+
+    for( int i = 0; i < 32; i++ ) {
+      if( i >= numSpheres ) continue;
+
+      float distance;
+      distance = intersectSphere(rayStart_f, rayDir_f, spherePos[i], sphereRadius[i]);
+
+      if( distance > 0. && distance < closestDist ) {
+        dist = distance;
+        closestDist = distance;
+        pos = distance * rayDir_f + rayStart_f;
+        normal = normalize(pos - spherePos[i]);
+        diffCol = sphereDiff[i];
+        specCol = sphereSpec[i];
+        phongExp = sphereShininess[i];
+        index = sphereRefrIndex[i];
+        refl = determineReflectance(normal, rayDir_f, index);
+      }
+    }
+
+    if( dist > 0. ) {
+      color = getNaturalColor(pos, normal, -rayDir_f, diffCol, specCol, phongExp);
+      color *= opacity;
+    }
+
+    return color;
+  }
+
+  /**
   * Get reflected color
   */
   vec3 getReflectedColor(vec3 reflStart, vec3 reflNormal, vec3 rayDir, float refl) {
@@ -220,7 +333,10 @@ FRAGMENT_SHADER = `
     vec3 normal;
     vec3 diffCol;
     vec3 specCol;
-    float shiny;
+    float phongExp;
+    float opacity;
+    float index;
+    float radius;
 
     color = vec3(0.);
 
@@ -245,7 +361,8 @@ FRAGMENT_SHADER = `
           specCol = vec3(0.6);
           if( i != 0 ) thisRefl = determineReflectance(normal, rayDir, 1.7);
         }
-        shiny = 250.;
+        phongExp = 250.;
+        opacity = 1.;
       }
 
       for( int i = 0; i < 32; i++ ) {
@@ -260,15 +377,25 @@ FRAGMENT_SHADER = `
           normal = normalize(pos - spherePos[i]);
           diffCol = sphereDiff[i];
           specCol = sphereSpec[i];
-          shiny = sphereShininess[i];
-          if( i != 0 ) determineReflectance(normal, rayDir, sphereRefrIndex[i]);
+          phongExp = sphereShininess[i];
+          index = sphereRefrIndex[i];
+          if( i != 0 ) determineReflectance(normal, rayDir, index);
+          opacity = sphereOpacity[i];
+          radius = sphereRadius[i];
         }
       }
 
       if( dist > 0. ) {
-        vec3 c = getNaturalColor(pos, normal, -reflDir, diffCol, specCol, shiny);
+        vec3 c = getNaturalColor(pos, normal, -reflDir, diffCol, specCol, phongExp);
         refl *= thisRefl;
         color += pow(refl, float(i+1)) * c;
+        if( opacity != 1. ) {
+          color *= opacity;
+          vec3 refrCol;
+          refrCol = getRefractedColor(pos, -reflDir, normal, index, radius, refl * opacity);
+          refrCol *= 1. - opacity;
+          color += refrCol;
+        }
 
         reflStart = pos;
         reflNormal = normal;
@@ -279,6 +406,8 @@ FRAGMENT_SHADER = `
 
     return color;
   }
+
+  /***** MAIN PROGRAM *****/
 
   /**
   * Intersection test for the world
@@ -292,8 +421,12 @@ FRAGMENT_SHADER = `
     vec3 normal;
     vec3 diffCol;
     vec3 specCol;
-    float shiny;
+    float phongExp;
     float refl;
+    float opacity;
+    float index;
+    float radius;
+
 
     color = vec3(0.);
     closestDist = 100000.;
@@ -313,7 +446,8 @@ FRAGMENT_SHADER = `
         specCol = vec3(0.4);
         refl = determineReflectance(normal, rayDir, 1.2);
       }
-      shiny = 250.;
+      phongExp = 250.;
+      opacity = 1.;
     }
 
     for( int i = 0; i < 32; i++ ) {
@@ -329,13 +463,23 @@ FRAGMENT_SHADER = `
         normal = normalize(pos - spherePos[i]);
         diffCol = sphereDiff[i];
         specCol = sphereSpec[i];
-        shiny = sphereShininess[i];
-        refl = determineReflectance(normal, rayDir, sphereRefrIndex[i]);
+        phongExp = sphereShininess[i];
+        index = sphereRefrIndex[i];
+        refl = determineReflectance(normal, rayDir, index);
+        opacity = sphereOpacity[i];
+        radius = sphereRadius[i];
       }
     }
 
     if( dist > 0. ) {
-      color = getNaturalColor(pos, normal, -rayDir, diffCol, specCol, shiny);
+      color = getNaturalColor(pos, normal, -rayDir, diffCol, specCol, phongExp);
+      if( opacity != 1. ) {
+        color *= opacity;
+        vec3 refrCol;
+        refrCol = getRefractedColor(pos, rayDir, normal, index, radius, opacity);
+        refrCol *= 1. - opacity;
+        color += refrCol;
+      }
       color += getReflectedColor(pos, normal, rayDir, refl);
     }
 
@@ -343,7 +487,8 @@ FRAGMENT_SHADER = `
   }
 
   /**
-  * main function
+  * Main function, just determines the direction of the initial ray and
+  * calls intersectWorld()
   */
   void main() {
     vec3 cameraDir;

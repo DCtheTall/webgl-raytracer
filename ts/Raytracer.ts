@@ -174,6 +174,9 @@ export default class Raytracer {
       // Sending refractive index to the shader
       sphereUniform = this.gl.getUniformLocation(this.shaderProgram, 'sphereRefrIndex['+index+']');
       this.gl.uniform1f(sphereUniform, currSphere.refractiveIndex);
+      // Sending sphere's opacity to the shader
+      sphereUniform = this.gl.getUniformLocation(this.shaderProgram, 'sphereOpacity['+index+']');
+      this.gl.uniform1f(sphereUniform, currSphere.opacity);
     });
 
     // Get camera corners

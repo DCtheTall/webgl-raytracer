@@ -11,6 +11,8 @@ var Sphere = (function () {
             250 : params.shininess;
         this.refractiveIndex = params.refractiveIndex === undefined ?
             1.4 : params.refractiveIndex;
+        this.opacity = params.opacity === undefined ?
+            1 : params.opacity;
     }
     return Sphere;
 }());
