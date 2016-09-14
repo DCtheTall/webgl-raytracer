@@ -27,7 +27,7 @@ function main(): void {
 
   raytracer = new Raytracer(canvas);
   raytracer.setLookAt(-1, 2, 15, 0, 5, 0);
-  raytracer.ANIMATE = true;
+  raytracer.ANIMATE = false;
   raytracer.lights.push(
     new Light({ pos: new Vector(0, 8, 8), color: new Vector(0.3, 0.5, 0.3), intensity: 10 }),
     new Light({ pos: new Vector(6, 5, 10), color: new Vector(1, 0.7, 0.5), intensity: 10 }),

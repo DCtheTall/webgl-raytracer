@@ -15,7 +15,7 @@ function main() {
     document.body.appendChild(canvas);
     raytracer = new Raytracer_1.default(canvas);
     raytracer.setLookAt(-1, 2, 15, 0, 5, 0);
-    raytracer.ANIMATE = true;
+    raytracer.ANIMATE = false;
     raytracer.lights.push(new Light_1.default({ pos: new Vector_1.default(0, 8, 8), color: new Vector_1.default(0.3, 0.5, 0.3), intensity: 10 }), new Light_1.default({ pos: new Vector_1.default(6, 5, 10), color: new Vector_1.default(1, 0.7, 0.5), intensity: 10 }), new Light_1.default({ pos: new Vector_1.default(-5, 1, 2), color: new Vector_1.default(0.5, 0.5, 1), intensity: 8 }));
     raytracer.spheres.push(new Sphere_1.default({
         pos: new Vector_1.default(0.5, 0.5, 1.5),
