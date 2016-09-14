@@ -1,4 +1,4 @@
-![alt tag](http://github.com/DCtheTall/WebGL_Raytracer/demo.png)
+![alt tag](https://github.com/DCtheTall/WebGL_Raytracer/blob/master/demo.png)
 # WebGL Raytracer
 WebGL Raytracer written in TypeScript
 and transpiled into ES5 with Webpack.
