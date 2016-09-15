@@ -173,30 +173,30 @@ FRAGMENT_SHADER = `
   {
     vec3 normalAxis;
     vec2 opticalVec;
-    mat2 R_1;
-    mat2 T;
-    mat2 R_2;
+    mat2 Refr_1;
+    mat2 Refr_2;
 
-    /* Vector normal to the optical axis */
+    /* Determining normal axis */
     normalAxis = rayDir - (dot(rayDir, -opticalAxis) * opticalAxis);
     if( length(normalAxis) != 0. ) normalAxis = normalize(normalAxis);
 
-    /* Ray transfer analysis */
+    /* Defining quantities for matrix ray tracing */
     opticalVec = vec2( 0., acos(dot(opticalAxis, -rayDir)) );
-    R_1 = mat2( 1., (1. - refrIndex)/(radius * refrIndex), 0., 1./refrIndex );
-    T = mat2( 1., 0., 2.*radius, 1. );
-    R_2 = mat2( 1., (refrIndex - 1.)/radius, 0., refrIndex );
+    Refr_1 = mat2( 1., (1. - refrIndex)/(radius * refrIndex), 0., 1./refrIndex );
+    Refr_2 = mat2( 1., (refrIndex - 1.)/radius, 0., refrIndex );
 
-    /* First 2 transformations */
-    opticalVec = T * R_1 * opticalVec;
+    /* First refraction */
+    opticalVec = Refr_1 * opticalVec;
+    /* Translation through medium of the sphere */
+    opticalVec.x += sin(opticalVec.y) * 2. * radius;
 
     /* Determining the starting point of the outgoing ray */
     outStart = rayStart - (cos(opticalVec.y) * opticalAxis) + (opticalVec.x * normalAxis);
 
-    /* Final ray transformation */
-    opticalVec = R_2 * opticalVec;
+    /* Second refraction */
+    opticalVec = Refr_2 * opticalVec;
 
-    /* Determining the direction of the output ray */
+    /* Determining the direction of the outgoing ray */
     outDir = (-cos(opticalVec.y) * opticalAxis) + (sin(opticalVec.y) * normalAxis);
   }
 

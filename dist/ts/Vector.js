@@ -1,5 +1,4 @@
 "use strict";
-var Quaternion_1 = require("./Quaternion");
 var Vector = (function () {
     function Vector(x, y, z) {
         this.x = x;
@@ -36,17 +35,6 @@ var Vector = (function () {
     };
     Vector.cross = function (v1, v2) {
         return new Vector(v1.y * v2.z - v1.z * v2.y, v1.z * v2.x - v1.x * v2.z, v1.x * v2.y - v1.y * v2.x);
-    };
-    Vector.rotate = function (v, theta, axis) {
-        var p;
-        var u;
-        var q;
-        p = new Quaternion_1.default(0, v.x, v.y, v.z);
-        u = Vector.scale(Math.sin(theta / 2), Vector.normalize(axis));
-        q = new Quaternion_1.default(Math.cos(theta / 2), u.x, u.y, u.z);
-        p = Quaternion_1.default.multiply(p, q.conjugate());
-        p = Quaternion_1.default.multiply(q, p);
-        return new Vector(p.i, p.j, p.k);
     };
     Vector.push = function (v, array) {
         array.push(v.x, v.y, v.z);

@@ -57,8 +57,8 @@
 	"use strict";
 	var Raytracer_1 = __webpack_require__(1);
 	var Vector_1 = __webpack_require__(2);
-	var Light_1 = __webpack_require__(5);
-	var Sphere_1 = __webpack_require__(6);
+	var Light_1 = __webpack_require__(6);
+	var Sphere_1 = __webpack_require__(7);
 	function main() {
 	    var canvas;
 	    var raytracer;
@@ -70,8 +70,81 @@
 	    canvas.style.top = '0px';
 	    document.body.appendChild(canvas);
 	    raytracer = new Raytracer_1.default(canvas);
+	    initAnimatedScene(raytracer);
+	}
+	window.onload = function (event) { return main(); };
+	/***** Create animated scene *****/
+	function initAnimatedScene(raytracer) {
 	    raytracer.setLookAt(-1, 2, 15, 0, 5, 0);
-	    raytracer.ANIMATE = false;
+	    raytracer.Animate = true;
+	    raytracer.lights.push(new Light_1.default({ pos: new Vector_1.default(0, 8, 8), color: new Vector_1.default(0.3, 0.5, 0.3), intensity: 10 }), new Light_1.default({ pos: new Vector_1.default(6, 5, 10), color: new Vector_1.default(1, 0.7, 0.5), intensity: 10 }), new Light_1.default({ pos: new Vector_1.default(-5, 1, 2), color: new Vector_1.default(0.5, 0.5, 1), intensity: 8 }));
+	    raytracer.spheres.push(new Sphere_1.default({
+	        pos: new Vector_1.default(0, 0.7, 0),
+	        diffuse: new Vector_1.default(0.9, 0.5, 0.3),
+	        specular: new Vector_1.default(1, 1, 1),
+	        radius: 0.5,
+	        shininess: 500,
+	        refractiveIndex: 2.6,
+	        opacity: 0.7
+	    }), new Sphere_1.default({
+	        pos: new Vector_1.default(0.6, 0.7, 0),
+	        diffuse: new Vector_1.default(0.7, 0.3, 0.3),
+	        specular: new Vector_1.default(1, 1, 1),
+	        radius: 0.07,
+	        shininess: 500,
+	        refractiveIndex: 2.4,
+	        opacity: 0.8
+	    }), new Sphere_1.default({
+	        pos: new Vector_1.default(1.3, 0.7, 0),
+	        diffuse: new Vector_1.default(0.3, 0.6, 0.8),
+	        specular: new Vector_1.default(1, 1, 1),
+	        radius: 0.15,
+	        shininess: 500,
+	        refractiveIndex: 2.5,
+	        opacity: 0.7
+	    }), new Sphere_1.default({
+	        pos: new Vector_1.default(1.32, 0.9, 0),
+	        diffuse: new Vector_1.default(1, 1, 1),
+	        specular: new Vector_1.default(1, 1, 1),
+	        radius: 0.04,
+	        shininess: 500,
+	        refractiveIndex: 2.5,
+	        opacity: 0.6
+	    }), new Sphere_1.default({
+	        pos: new Vector_1.default(1.75, 0, 0),
+	        diffuse: new Vector_1.default(0.3, 0.3, 1),
+	        specular: new Vector_1.default(1, 1, 1),
+	        radius: 0.3,
+	        refractiveIndex: 2.4,
+	        opacity: 0.4
+	    }));
+	    function animate(raytracer) {
+	        var time;
+	        var pos1;
+	        var pos2;
+	        var pos3;
+	        var pos4;
+	        time = new Date().getTime();
+	        pos1 = new Vector_1.default(0.7, 0.7, 0);
+	        pos1 = Vector_1.default.rotate(pos1, time / 723, new Vector_1.default(0, 1, 0));
+	        raytracer.spheres[1].position = pos1;
+	        pos2 = new Vector_1.default(1, 0.7, 0);
+	        pos2 = Vector_1.default.rotate(pos2, time / 1000, new Vector_1.default(0, 1, 0));
+	        raytracer.spheres[2].position = pos2;
+	        pos3 = new Vector_1.default(-0.3, 0.15, 0);
+	        pos3 = Vector_1.default.rotate(pos3, time / 600, new Vector_1.default(1, 2, 0));
+	        pos3 = Vector_1.default.add(pos2, pos3);
+	        raytracer.spheres[3].position = pos3;
+	        pos4 = new Vector_1.default(1.75, 0.7, 0);
+	        pos4 = Vector_1.default.rotate(pos4, time / 1870, new Vector_1.default(0, 1, 0));
+	        raytracer.spheres[4].position = pos4;
+	    }
+	    setTimeout(function () { raytracer.render(animate); }, 100);
+	}
+	/***** Create static scene *****/
+	function initStaticScene(raytracer) {
+	    raytracer.setLookAt(-1, 2, 15, 0, 5, 0);
+	    raytracer.Animate = false;
 	    raytracer.lights.push(new Light_1.default({ pos: new Vector_1.default(0, 8, 8), color: new Vector_1.default(0.3, 0.5, 0.3), intensity: 10 }), new Light_1.default({ pos: new Vector_1.default(6, 5, 10), color: new Vector_1.default(1, 0.7, 0.5), intensity: 10 }), new Light_1.default({ pos: new Vector_1.default(-5, 1, 2), color: new Vector_1.default(0.5, 0.5, 1), intensity: 8 }));
 	    raytracer.spheres.push(new Sphere_1.default({
 	        pos: new Vector_1.default(0.5, 0.5, 1.5),
@@ -104,10 +177,9 @@
 	        refractiveIndex: 2.6,
 	        opacity: 0.3
 	    }));
+	    function animate(raytracer) { }
 	    setTimeout(function () { raytracer.render(animate); }, 100);
 	}
-	function animate(raytracer) { }
-	window.onload = function (event) { return main(); };
 
 
 /***/ },
@@ -129,8 +201,8 @@
 	*/
 	"use strict";
 	var Vector_1 = __webpack_require__(2);
-	var Camera_1 = __webpack_require__(3);
-	var Shaders_1 = __webpack_require__(4);
+	var Camera_1 = __webpack_require__(4);
+	var Shaders_1 = __webpack_require__(5);
 	var Raytracer = (function () {
 	    /*
 	    * @class Raytracer
@@ -157,7 +229,7 @@
 	        // Initializing spheres array
 	        this.spheres = [];
 	        // Initializing flag for whether the raytracer animates
-	        this.ANIMATE = false;
+	        this.Animate = false;
 	    }
 	    /*
 	    * This method initializes the vertex buffers, input is aspect ratio
@@ -280,7 +352,7 @@
 	        // Draw new frame
 	        this.gl.drawArrays(this.gl.TRIANGLE_STRIP, 0, 4);
 	        // Render loop
-	        if (this.ANIMATE)
+	        if (this.Animate)
 	            window.requestAnimationFrame(function () { _this.render(animate); });
 	    };
 	    return Raytracer;
@@ -291,7 +363,7 @@
 
 /***/ },
 /* 2 */
-/***/ function(module, exports) {
+/***/ function(module, exports, __webpack_require__) {
 
 	/*
 	
@@ -304,6 +376,7 @@
 	
 	*/
 	"use strict";
+	var Quaternion_1 = __webpack_require__(3);
 	var Vector = (function () {
 	    function Vector(x, y, z) {
 	        this.x = x;
@@ -341,6 +414,17 @@
 	    Vector.cross = function (v1, v2) {
 	        return new Vector(v1.y * v2.z - v1.z * v2.y, v1.z * v2.x - v1.x * v2.z, v1.x * v2.y - v1.y * v2.x);
 	    };
+	    Vector.rotate = function (v, theta, axis) {
+	        var p;
+	        var u;
+	        var q;
+	        p = new Quaternion_1.default(0, v.x, v.y, v.z);
+	        u = Vector.scale(Math.sin(theta / 2), Vector.normalize(axis));
+	        q = new Quaternion_1.default(Math.cos(theta / 2), u.x, u.y, u.z);
+	        p = Quaternion_1.default.multiply(p, q.conjugate());
+	        p = Quaternion_1.default.multiply(q, p);
+	        return new Vector(p.i, p.j, p.k);
+	    };
 	    Vector.push = function (v, array) {
 	        array.push(v.x, v.y, v.z);
 	        return array;
@@ -353,6 +437,39 @@
 
 /***/ },
 /* 3 */
+/***/ function(module, exports) {
+
+	/*
+	
+	WebGL Raytacer
+	--------------
+	
+	Quaternion object
+	- Contains mathematical operations for quaternions
+	
+	*/
+	"use strict";
+	var Quaternion = (function () {
+	    function Quaternion(r, i, j, k) {
+	        this.r = r;
+	        this.i = i;
+	        this.j = j;
+	        this.k = k;
+	    }
+	    Quaternion.prototype.conjugate = function () {
+	        return new Quaternion(this.r, -this.i, -this.j, -this.k);
+	    };
+	    Quaternion.multiply = function (q1, q2) {
+	        return new Quaternion(q1.r * q1.r - q1.i * q2.i - q1.j * q2.j - q1.k * q2.k, q1.r * q2.i + q1.i * q2.r + q1.j * q2.k - q1.k * q2.j, q1.r * q2.j - q1.i * q2.k + q1.j * q2.r + q1.k * q2.i, q1.r * q2.k + q1.i * q2.j - q1.j * q2.i + q1.k * q2.r);
+	    };
+	    return Quaternion;
+	}());
+	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.default = Quaternion;
+
+
+/***/ },
+/* 4 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/*
@@ -382,7 +499,7 @@
 
 
 /***/ },
-/* 4 */
+/* 5 */
 /***/ function(module, exports) {
 
 	/*
@@ -407,7 +524,7 @@
 	/* VERTEX SHADER */
 	VERTEX_SHADER = "\n  precision mediump float;\n\n  attribute vec2 aWindowPosition;\n  attribute vec3 aPosition;\n\n  varying vec3 vPosition;\n\n  void main() {\n    gl_Position = vec4(aWindowPosition, 1., 1.);\n    vPosition = aPosition;\n  }\n";
 	/* FRAGMENT SHADER */
-	FRAGMENT_SHADER = "\n  precision mediump float;\n\n  varying vec3 vPosition;\n\n  uniform vec3 cameraPos;\n  uniform int numLights;\n  uniform vec3 lightPos[32];\n  uniform vec3 lightCol[32];\n  uniform float intensities[32];\n  uniform int numSpheres;\n  uniform vec3 spherePos[32];\n  uniform float sphereRadius[32];\n  uniform vec3 sphereDiff[32];\n  uniform vec3 sphereSpec[32];\n  uniform float sphereShininess[32];\n  uniform float sphereRefrIndex[32];\n  uniform float sphereOpacity[32];\n\n  const int numReflections = 3;\n\n  /***** INTERSECTION TESTS FOR GEOMETRIES *****/\n\n  /**\n  * Intersection test for a plane at y = 0\n  */\n  float intersectPlane(vec3 rayStart, vec3 rayDir) {\n    float dist;\n    float denom;\n\n    dist = -1.;\n    denom = dot(rayDir, vec3(0., 1., 0.));\n    if( denom < 0. ) {\n      dist = dot(-rayStart, vec3(0., 1., 0.)) / denom;\n    }\n\n    return dist;\n  }\n\n  /**\n  * Intersection test for spheres\n  */\n  float intersectSphere(vec3 rayStart, vec3 rayDir, vec3 center, float r) {\n    vec3 at;\n    float v;\n    float dist;\n    float disc;\n\n    at = center - rayStart;\n    v = dot(at, rayDir);\n    dist = -1.;\n    if( v >= 0. ) {\n      disc = r * r - ( dot(at, at) - v * v );\n      if( disc > 0. ) dist = v - sqrt(disc);\n    }\n    return dist;\n  }\n\n  /***** OPTICAL FUNCTIONS *****/\n\n  /**\n  * Test for shadow casting implements pyramid tracing to soften shadow edges\n  */\n  void testForShadow( inout bool inShadow[4],\n                        float distanceToLight,\n                        vec3 rayStart,\n                        vec3 rayDir,\n                        vec3 normal )\n  {\n    vec3 dx;\n    vec3 dy;\n    float r;\n\n    dx = cross(normal, rayDir);\n    if( length(dx) != 0. ) dx = normalize(dx);\n    dy = cross(rayDir, dx);\n    if( length(dy) != 0. ) dy = normalize(dy);\n    r = 0.01;\n\n    for( int j = 0; j < 4; j++ )\n    for( int i = 0; i < 32; i++ ) {\n      if( i >= numSpheres ) continue;\n\n      vec3 ds;\n      float dist;\n\n      if( j == 0 ){ ds = -dx - dy; }\n      else if( j == 1 ){ ds = dx - dy; }\n      else if( j == 2 ){ ds = dy - dx; }\n      else { ds = dy + dx; }\n      ds = r * normalize(ds);\n\n      dist = intersectSphere(rayStart, normalize(rayDir + ds), spherePos[i], sphereRadius[i]);\n      if( dist > 0. && dist < distanceToLight ) inShadow[j] = true;\n    }\n  }\n\n  /**\n  * Determine the reflectance of the sphere using its refractive index\n  * and the Fresnel equations\n  */\n  float determineReflectance(vec3 normal, vec3 rayDir, float refrIndex) {\n    float cosine_i;\n    float sine_i;\n    float theta_t;\n    float cosine_t;\n    float refl;\n\n    /* Snell's law to find the angle the transmitted ray makes with the normal */\n    cosine_i = dot(normalize(normal), normalize(-rayDir));\n    sine_i = length(cross( normalize(normal), normalize(-rayDir) ));\n    theta_t = asin( sine_i / refrIndex );\n    cosine_t = cos(theta_t);\n\n    /* Finding reflectance with Fresnel's equations */\n    refl = cosine_i - refrIndex * cosine_t;\n    refl /= cosine_i + refrIndex * cosine_t;\n    refl = pow(abs(refl), 2.);\n\n    return clamp(refl, 0., 1.);\n  }\n\n  /**\n  * Determine the direction of the transmitted light ray\n  */\n  void transmitRay( vec3 rayStart,\n                    vec3 rayDir,\n                    vec3 opticalAxis,\n                    float refrIndex,\n                    float radius,\n                    out vec3 outStart,\n                    out vec3 outDir )\n  {\n    vec3 normalAxis;\n    vec2 opticalVec;\n    mat2 R_1;\n    mat2 T;\n    mat2 R_2;\n\n    /* Vector normal to the optical axis */\n    normalAxis = rayDir - (dot(rayDir, -opticalAxis) * opticalAxis);\n    if( length(normalAxis) != 0. ) normalAxis = normalize(normalAxis);\n\n    /* Ray transfer analysis */\n    opticalVec = vec2( 0., acos(dot(opticalAxis, -rayDir)) );\n    R_1 = mat2( 1., (1. - refrIndex)/(radius * refrIndex), 0., 1./refrIndex );\n    T = mat2( 1., 0., 2.*radius, 1. );\n    R_2 = mat2( 1., (refrIndex - 1.)/radius, 0., refrIndex );\n\n    /* First 2 transformations */\n    opticalVec = T * R_1 * opticalVec;\n\n    /* Determining the starting point of the outgoing ray */\n    outStart = rayStart - (cos(opticalVec.y) * opticalAxis) + (opticalVec.x * normalAxis);\n\n    /* Final ray transformation */\n    opticalVec = R_2 * opticalVec;\n\n    /* Determining the direction of the output ray */\n    outDir = (-cos(opticalVec.y) * opticalAxis) + (sin(opticalVec.y) * normalAxis);\n  }\n\n  /***** COLORING FUNCTIONS *****/\n\n  /**\n  * Color fragment using Blinn-Phong global illumination model\n  */\n  vec3 getNaturalColor( vec3 pos,\n                        vec3 normal,\n                        vec3 viewDir,\n                        vec3 diffColor,\n                        vec3 specColor,\n                        float shininess )\n  {\n    vec3 color = vec3(0.);\n    for ( int i = 0; i < 32; i++ ) {\n      if( i >= numLights ) continue;\n\n      vec3 currPos;\n      vec3 currColor;\n      float intensity;\n      vec3 lightDir;\n      float distance;\n      bool isInShadow[4];\n      float lMax;\n      float sMax;\n      vec3 testColor;\n      float lambertian;\n      vec3 H;\n      float specular;\n\n      lightDir = normalize(lightPos[i] - pos);\n      distance = length(lightPos[i] - pos);\n\n      testForShadow(isInShadow, distance, pos, lightDir, normal);\n\n      lMax = 1.; sMax = 1.;\n\n      for( int j = 0; j < 4; j++ ) {\n        if( isInShadow[j] ) {\n          lMax -= 0.2;\n          sMax -= 0.2475;\n        }\n      }\n\n      lambertian = clamp(intensities[i] * dot(normal, lightDir) / distance, 0.0, lMax);\n\n      H = normalize(lightDir + viewDir);\n      specular = clamp(intensities[i] * pow(dot(normal, H), shininess) / distance / distance, 0.01, sMax);\n\n      color += (lambertian * diffColor + specular * specColor) * lightCol[i];\n    }\n    return color;\n  }\n\n  /**\n  * Get refracted color of non-opaque objects\n  */\n  vec3 getRefractedColor(vec3 refrStart, vec3 rayDir, vec3 opticalAxis, float refrIndex, float radius, float opacity) {\n    vec3 color;\n    vec3 rayStart_f;\n    vec3 rayDir_f;\n    float closestDist;\n    float dist;\n    vec3 pos;\n    vec3 normal;\n    vec3 diffCol;\n    vec3 specCol;\n    float phongExp;\n    float refl;\n    float index;\n\n    color = vec3(0.);\n    transmitRay(refrStart, rayDir, opticalAxis, refrIndex, radius, rayStart_f, rayDir_f);\n\n    closestDist = 100000.;\n\n    dist = intersectPlane(rayStart_f, rayDir_f);\n    if( dist > 0. ) {\n      closestDist = dist;\n      pos = dist * rayDir_f + rayStart_f;\n      normal = vec3(0., 1., 0.);\n      if( mod(floor(pos.x) + floor(pos.z), 2.) != 0. ) {\n        diffCol = vec3(0.9);\n        specCol = vec3(1.);\n        refl = determineReflectance(normal, rayDir_f, 1.05);\n      }\n      else {\n        diffCol = vec3(0.2, 0.2, 0.4);\n        specCol = vec3(0.4);\n        refl = determineReflectance(normal, rayDir_f, 1.2);\n      }\n    }\n\n    for( int i = 0; i < 32; i++ ) {\n      if( i >= numSpheres ) continue;\n\n      float distance;\n      distance = intersectSphere(rayStart_f, rayDir_f, spherePos[i], sphereRadius[i]);\n\n      if( distance > 0. && distance < closestDist ) {\n        dist = distance;\n        closestDist = distance;\n        pos = distance * rayDir_f + rayStart_f;\n        normal = normalize(pos - spherePos[i]);\n        diffCol = sphereDiff[i];\n        specCol = sphereSpec[i];\n        phongExp = sphereShininess[i];\n        index = sphereRefrIndex[i];\n        refl = determineReflectance(normal, rayDir_f, index);\n      }\n    }\n\n    if( dist > 0. ) {\n      color = getNaturalColor(pos, normal, -rayDir_f, diffCol, specCol, phongExp);\n      color *= opacity;\n    }\n\n    return color;\n  }\n\n  /**\n  * Get reflected color\n  */\n  vec3 getReflectedColor(vec3 reflStart, vec3 reflNormal, vec3 rayDir, float refl) {\n    const int MAX_DEPTH = 3;\n\n    vec3 color;\n    float closestDist;\n    vec3 reflDir;\n    float dist;\n    vec3 pos;\n    vec3 normal;\n    vec3 diffCol;\n    vec3 specCol;\n    float phongExp;\n    float opacity;\n    float index;\n    float radius;\n\n    color = vec3(0.);\n\n    for( int i = 0; i <= MAX_DEPTH; i++ ) {\n      float thisRefl = 1.;\n\n      closestDist = 100000.;\n      reflDir = reflect(rayDir, reflNormal);\n\n      dist = intersectPlane(reflStart, reflDir);\n      if( dist > 0. ) {\n        closestDist = dist;\n        pos = dist * reflDir + reflStart;\n        normal = vec3(0., 1., 0.);\n        if( mod(floor(pos.x) + floor(pos.z), 2.) != 0. ) {\n          diffCol = vec3(0.9);\n          specCol = vec3(1.);\n          if( i != 0 ) thisRefl = determineReflectance(normal, rayDir, 1.2);\n        }\n        else {\n          diffCol = vec3(0.4, 0.4, 0.6);\n          specCol = vec3(0.6);\n          if( i != 0 ) thisRefl = determineReflectance(normal, rayDir, 1.7);\n        }\n        phongExp = 250.;\n        opacity = 1.;\n      }\n\n      for( int i = 0; i < 32; i++ ) {\n        if( i >= numSpheres ) continue;\n\n        float distance;\n        distance = intersectSphere(reflStart, reflDir, spherePos[i], sphereRadius[i]);\n        if( distance >= 0. && distance < closestDist ) {\n          dist = distance;\n          closestDist = dist;\n          pos = dist * reflDir + reflStart;\n          normal = normalize(pos - spherePos[i]);\n          diffCol = sphereDiff[i];\n          specCol = sphereSpec[i];\n          phongExp = sphereShininess[i];\n          index = sphereRefrIndex[i];\n          if( i != 0 ) determineReflectance(normal, rayDir, index);\n          opacity = sphereOpacity[i];\n          radius = sphereRadius[i];\n        }\n      }\n\n      if( dist > 0. ) {\n        vec3 c = getNaturalColor(pos, normal, -reflDir, diffCol, specCol, phongExp);\n        refl *= thisRefl;\n        color += pow(refl, float(i+1)) * c;\n        if( opacity != 1. ) {\n          color *= opacity;\n          vec3 refrCol;\n          refrCol = getRefractedColor(pos, -reflDir, normal, index, radius, opacity);\n          refrCol *= 1. - opacity;\n          color += refrCol;\n        }\n\n        reflStart = pos;\n        reflNormal = normal;\n        rayDir = reflDir;\n      }\n      else break;\n    }\n\n    return color;\n  }\n\n  /***** MAIN PROGRAM *****/\n\n  /**\n  * Intersection test for the world\n  * returns a color vector\n  */\n  vec3 intersectWorld(vec3 rayStart, vec3 rayDir) {\n    vec3 color;\n    float closestDist;\n    float dist;\n    vec3 pos;\n    vec3 normal;\n    vec3 diffCol;\n    vec3 specCol;\n    float phongExp;\n    float refl;\n    float opacity;\n    float index;\n    float radius;\n\n\n    color = vec3(0.);\n    closestDist = 100000.;\n\n    dist = intersectPlane(rayStart, rayDir);\n    if( dist > 0. ) {\n      closestDist = dist;\n      pos = dist * rayDir + rayStart;\n      normal = vec3(0., 1., 0.);\n      if( mod(floor(pos.x) + floor(pos.z), 2.) != 0. ) {\n        diffCol = vec3(0.9);\n        specCol = vec3(1.);\n        refl = determineReflectance(normal, rayDir, 1.05);\n      }\n      else {\n        diffCol = vec3(0.2, 0.2, 0.4);\n        specCol = vec3(0.4);\n        refl = determineReflectance(normal, rayDir, 1.2);\n      }\n      phongExp = 250.;\n      opacity = 1.;\n    }\n\n    for( int i = 0; i < 32; i++ ) {\n      if( i >= numSpheres ) continue;\n\n      float distance;\n      distance = intersectSphere(rayStart, rayDir, spherePos[i], sphereRadius[i]);\n\n      if( distance > 0. && distance < closestDist ) {\n        dist = distance;\n        closestDist = distance;\n        pos = distance * rayDir + rayStart;\n        normal = normalize(pos - spherePos[i]);\n        diffCol = sphereDiff[i];\n        specCol = sphereSpec[i];\n        phongExp = sphereShininess[i];\n        index = sphereRefrIndex[i];\n        refl = determineReflectance(normal, rayDir, index);\n        opacity = sphereOpacity[i];\n        radius = sphereRadius[i];\n      }\n    }\n\n    if( dist > 0. ) {\n      color = getNaturalColor(pos, normal, -rayDir, diffCol, specCol, phongExp);\n      if( opacity != 1. ) {\n        color *= opacity;\n        vec3 refrCol;\n        refrCol = getRefractedColor(pos, rayDir, normal, index, radius, opacity);\n        refrCol *= 1. - opacity;\n        color += refrCol;\n      }\n      color += getReflectedColor(pos, normal, rayDir, refl);\n    }\n\n    return color;\n  }\n\n  /**\n  * Main function, just determines the direction of the initial ray and\n  * calls intersectWorld()\n  */\n  void main() {\n    vec3 cameraDir;\n    vec3 color;\n\n    cameraDir = normalize(vPosition - cameraPos);\n    color = intersectWorld(cameraPos, cameraDir);\n\n    gl_FragColor = vec4(color, 1.);\n  }\n";
+	FRAGMENT_SHADER = "\n  precision mediump float;\n\n  varying vec3 vPosition;\n\n  uniform vec3 cameraPos;\n  uniform int numLights;\n  uniform vec3 lightPos[32];\n  uniform vec3 lightCol[32];\n  uniform float intensities[32];\n  uniform int numSpheres;\n  uniform vec3 spherePos[32];\n  uniform float sphereRadius[32];\n  uniform vec3 sphereDiff[32];\n  uniform vec3 sphereSpec[32];\n  uniform float sphereShininess[32];\n  uniform float sphereRefrIndex[32];\n  uniform float sphereOpacity[32];\n\n  const int numReflections = 3;\n\n  /***** INTERSECTION TESTS FOR GEOMETRIES *****/\n\n  /**\n  * Intersection test for a plane at y = 0\n  */\n  float intersectPlane(vec3 rayStart, vec3 rayDir) {\n    float dist;\n    float denom;\n\n    dist = -1.;\n    denom = dot(rayDir, vec3(0., 1., 0.));\n    if( denom < 0. ) {\n      dist = dot(-rayStart, vec3(0., 1., 0.)) / denom;\n    }\n\n    return dist;\n  }\n\n  /**\n  * Intersection test for spheres\n  */\n  float intersectSphere(vec3 rayStart, vec3 rayDir, vec3 center, float r) {\n    vec3 at;\n    float v;\n    float dist;\n    float disc;\n\n    at = center - rayStart;\n    v = dot(at, rayDir);\n    dist = -1.;\n    if( v >= 0. ) {\n      disc = r * r - ( dot(at, at) - v * v );\n      if( disc > 0. ) dist = v - sqrt(disc);\n    }\n    return dist;\n  }\n\n  /***** OPTICAL FUNCTIONS *****/\n\n  /**\n  * Test for shadow casting implements pyramid tracing to soften shadow edges\n  */\n  void testForShadow( inout bool inShadow[4],\n                        float distanceToLight,\n                        vec3 rayStart,\n                        vec3 rayDir,\n                        vec3 normal )\n  {\n    vec3 dx;\n    vec3 dy;\n    float r;\n\n    dx = cross(normal, rayDir);\n    if( length(dx) != 0. ) dx = normalize(dx);\n    dy = cross(rayDir, dx);\n    if( length(dy) != 0. ) dy = normalize(dy);\n    r = 0.01;\n\n    for( int j = 0; j < 4; j++ )\n    for( int i = 0; i < 32; i++ ) {\n      if( i >= numSpheres ) continue;\n\n      vec3 ds;\n      float dist;\n\n      if( j == 0 ){ ds = -dx - dy; }\n      else if( j == 1 ){ ds = dx - dy; }\n      else if( j == 2 ){ ds = dy - dx; }\n      else { ds = dy + dx; }\n      ds = r * normalize(ds);\n\n      dist = intersectSphere(rayStart, normalize(rayDir + ds), spherePos[i], sphereRadius[i]);\n      if( dist > 0. && dist < distanceToLight ) inShadow[j] = true;\n    }\n  }\n\n  /**\n  * Determine the reflectance of the sphere using its refractive index\n  * and the Fresnel equations\n  */\n  float determineReflectance(vec3 normal, vec3 rayDir, float refrIndex) {\n    float cosine_i;\n    float sine_i;\n    float theta_t;\n    float cosine_t;\n    float refl;\n\n    /* Snell's law to find the angle the transmitted ray makes with the normal */\n    cosine_i = dot(normalize(normal), normalize(-rayDir));\n    sine_i = length(cross( normalize(normal), normalize(-rayDir) ));\n    theta_t = asin( sine_i / refrIndex );\n    cosine_t = cos(theta_t);\n\n    /* Finding reflectance with Fresnel's equations */\n    refl = cosine_i - refrIndex * cosine_t;\n    refl /= cosine_i + refrIndex * cosine_t;\n    refl = pow(abs(refl), 2.);\n\n    return clamp(refl, 0., 1.);\n  }\n\n  /**\n  * Determine the direction of the transmitted light ray\n  */\n  void transmitRay( vec3 rayStart,\n                    vec3 rayDir,\n                    vec3 opticalAxis,\n                    float refrIndex,\n                    float radius,\n                    out vec3 outStart,\n                    out vec3 outDir )\n  {\n    vec3 normalAxis;\n    vec2 opticalVec;\n    mat2 Refr_1;\n    mat2 Refr_2;\n\n    /* Determining normal axis */\n    normalAxis = rayDir - (dot(rayDir, -opticalAxis) * opticalAxis);\n    if( length(normalAxis) != 0. ) normalAxis = normalize(normalAxis);\n\n    /* Defining quantities for matrix ray tracing */\n    opticalVec = vec2( 0., acos(dot(opticalAxis, -rayDir)) );\n    Refr_1 = mat2( 1., (1. - refrIndex)/(radius * refrIndex), 0., 1./refrIndex );\n    Refr_2 = mat2( 1., (refrIndex - 1.)/radius, 0., refrIndex );\n\n    /* First refraction */\n    opticalVec = Refr_1 * opticalVec;\n    /* Translation through medium of the sphere */\n    opticalVec.x += sin(opticalVec.y) * 2. * radius;\n\n    /* Determining the starting point of the outgoing ray */\n    outStart = rayStart - (cos(opticalVec.y) * opticalAxis) + (opticalVec.x * normalAxis);\n\n    /* Second refraction */\n    opticalVec = Refr_2 * opticalVec;\n\n    /* Determining the direction of the outgoing ray */\n    outDir = (-cos(opticalVec.y) * opticalAxis) + (sin(opticalVec.y) * normalAxis);\n  }\n\n  /***** COLORING FUNCTIONS *****/\n\n  /**\n  * Color fragment using Blinn-Phong global illumination model\n  */\n  vec3 getNaturalColor( vec3 pos,\n                        vec3 normal,\n                        vec3 viewDir,\n                        vec3 diffColor,\n                        vec3 specColor,\n                        float shininess )\n  {\n    vec3 color = vec3(0.);\n    for ( int i = 0; i < 32; i++ ) {\n      if( i >= numLights ) continue;\n\n      vec3 currPos;\n      vec3 currColor;\n      float intensity;\n      vec3 lightDir;\n      float distance;\n      bool isInShadow[4];\n      float lMax;\n      float sMax;\n      vec3 testColor;\n      float lambertian;\n      vec3 H;\n      float specular;\n\n      lightDir = normalize(lightPos[i] - pos);\n      distance = length(lightPos[i] - pos);\n\n      testForShadow(isInShadow, distance, pos, lightDir, normal);\n\n      lMax = 1.; sMax = 1.;\n\n      for( int j = 0; j < 4; j++ ) {\n        if( isInShadow[j] ) {\n          lMax -= 0.2;\n          sMax -= 0.2475;\n        }\n      }\n\n      lambertian = clamp(intensities[i] * dot(normal, lightDir) / distance, 0.0, lMax);\n\n      H = normalize(lightDir + viewDir);\n      specular = clamp(intensities[i] * pow(dot(normal, H), shininess) / distance / distance, 0.01, sMax);\n\n      color += (lambertian * diffColor + specular * specColor) * lightCol[i];\n    }\n    return color;\n  }\n\n  /**\n  * Get refracted color of non-opaque objects\n  */\n  vec3 getRefractedColor(vec3 refrStart, vec3 rayDir, vec3 opticalAxis, float refrIndex, float radius, float opacity) {\n    vec3 color;\n    vec3 rayStart_f;\n    vec3 rayDir_f;\n    float closestDist;\n    float dist;\n    vec3 pos;\n    vec3 normal;\n    vec3 diffCol;\n    vec3 specCol;\n    float phongExp;\n    float refl;\n    float index;\n\n    color = vec3(0.);\n    transmitRay(refrStart, rayDir, opticalAxis, refrIndex, radius, rayStart_f, rayDir_f);\n\n    closestDist = 100000.;\n\n    dist = intersectPlane(rayStart_f, rayDir_f);\n    if( dist > 0. ) {\n      closestDist = dist;\n      pos = dist * rayDir_f + rayStart_f;\n      normal = vec3(0., 1., 0.);\n      if( mod(floor(pos.x) + floor(pos.z), 2.) != 0. ) {\n        diffCol = vec3(0.9);\n        specCol = vec3(1.);\n        refl = determineReflectance(normal, rayDir_f, 1.05);\n      }\n      else {\n        diffCol = vec3(0.2, 0.2, 0.4);\n        specCol = vec3(0.4);\n        refl = determineReflectance(normal, rayDir_f, 1.2);\n      }\n    }\n\n    for( int i = 0; i < 32; i++ ) {\n      if( i >= numSpheres ) continue;\n\n      float distance;\n      distance = intersectSphere(rayStart_f, rayDir_f, spherePos[i], sphereRadius[i]);\n\n      if( distance > 0. && distance < closestDist ) {\n        dist = distance;\n        closestDist = distance;\n        pos = distance * rayDir_f + rayStart_f;\n        normal = normalize(pos - spherePos[i]);\n        diffCol = sphereDiff[i];\n        specCol = sphereSpec[i];\n        phongExp = sphereShininess[i];\n        index = sphereRefrIndex[i];\n        refl = determineReflectance(normal, rayDir_f, index);\n      }\n    }\n\n    if( dist > 0. ) {\n      color = getNaturalColor(pos, normal, -rayDir_f, diffCol, specCol, phongExp);\n      color *= opacity;\n    }\n\n    return color;\n  }\n\n  /**\n  * Get reflected color\n  */\n  vec3 getReflectedColor(vec3 reflStart, vec3 reflNormal, vec3 rayDir, float refl) {\n    const int MAX_DEPTH = 3;\n\n    vec3 color;\n    float closestDist;\n    vec3 reflDir;\n    float dist;\n    vec3 pos;\n    vec3 normal;\n    vec3 diffCol;\n    vec3 specCol;\n    float phongExp;\n    float opacity;\n    float index;\n    float radius;\n\n    color = vec3(0.);\n\n    for( int i = 0; i <= MAX_DEPTH; i++ ) {\n      float thisRefl = 1.;\n\n      closestDist = 100000.;\n      reflDir = reflect(rayDir, reflNormal);\n\n      dist = intersectPlane(reflStart, reflDir);\n      if( dist > 0. ) {\n        closestDist = dist;\n        pos = dist * reflDir + reflStart;\n        normal = vec3(0., 1., 0.);\n        if( mod(floor(pos.x) + floor(pos.z), 2.) != 0. ) {\n          diffCol = vec3(0.9);\n          specCol = vec3(1.);\n          if( i != 0 ) thisRefl = determineReflectance(normal, rayDir, 1.2);\n        }\n        else {\n          diffCol = vec3(0.4, 0.4, 0.6);\n          specCol = vec3(0.6);\n          if( i != 0 ) thisRefl = determineReflectance(normal, rayDir, 1.7);\n        }\n        phongExp = 250.;\n        opacity = 1.;\n      }\n\n      for( int i = 0; i < 32; i++ ) {\n        if( i >= numSpheres ) continue;\n\n        float distance;\n        distance = intersectSphere(reflStart, reflDir, spherePos[i], sphereRadius[i]);\n        if( distance >= 0. && distance < closestDist ) {\n          dist = distance;\n          closestDist = dist;\n          pos = dist * reflDir + reflStart;\n          normal = normalize(pos - spherePos[i]);\n          diffCol = sphereDiff[i];\n          specCol = sphereSpec[i];\n          phongExp = sphereShininess[i];\n          index = sphereRefrIndex[i];\n          if( i != 0 ) determineReflectance(normal, rayDir, index);\n          opacity = sphereOpacity[i];\n          radius = sphereRadius[i];\n        }\n      }\n\n      if( dist > 0. ) {\n        vec3 c = getNaturalColor(pos, normal, -reflDir, diffCol, specCol, phongExp);\n        refl *= thisRefl;\n        color += pow(refl, float(i+1)) * c;\n        if( opacity != 1. ) {\n          color *= opacity;\n          vec3 refrCol;\n          refrCol = getRefractedColor(pos, -reflDir, normal, index, radius, opacity);\n          refrCol *= 1. - opacity;\n          color += refrCol;\n        }\n\n        reflStart = pos;\n        reflNormal = normal;\n        rayDir = reflDir;\n      }\n      else break;\n    }\n\n    return color;\n  }\n\n  /***** MAIN PROGRAM *****/\n\n  /**\n  * Intersection test for the world\n  * returns a color vector\n  */\n  vec3 intersectWorld(vec3 rayStart, vec3 rayDir) {\n    vec3 color;\n    float closestDist;\n    float dist;\n    vec3 pos;\n    vec3 normal;\n    vec3 diffCol;\n    vec3 specCol;\n    float phongExp;\n    float refl;\n    float opacity;\n    float index;\n    float radius;\n\n\n    color = vec3(0.);\n    closestDist = 100000.;\n\n    dist = intersectPlane(rayStart, rayDir);\n    if( dist > 0. ) {\n      closestDist = dist;\n      pos = dist * rayDir + rayStart;\n      normal = vec3(0., 1., 0.);\n      if( mod(floor(pos.x) + floor(pos.z), 2.) != 0. ) {\n        diffCol = vec3(0.9);\n        specCol = vec3(1.);\n        refl = determineReflectance(normal, rayDir, 1.05);\n      }\n      else {\n        diffCol = vec3(0.2, 0.2, 0.4);\n        specCol = vec3(0.4);\n        refl = determineReflectance(normal, rayDir, 1.2);\n      }\n      phongExp = 250.;\n      opacity = 1.;\n    }\n\n    for( int i = 0; i < 32; i++ ) {\n      if( i >= numSpheres ) continue;\n\n      float distance;\n      distance = intersectSphere(rayStart, rayDir, spherePos[i], sphereRadius[i]);\n\n      if( distance > 0. && distance < closestDist ) {\n        dist = distance;\n        closestDist = distance;\n        pos = distance * rayDir + rayStart;\n        normal = normalize(pos - spherePos[i]);\n        diffCol = sphereDiff[i];\n        specCol = sphereSpec[i];\n        phongExp = sphereShininess[i];\n        index = sphereRefrIndex[i];\n        refl = determineReflectance(normal, rayDir, index);\n        opacity = sphereOpacity[i];\n        radius = sphereRadius[i];\n      }\n    }\n\n    if( dist > 0. ) {\n      color = getNaturalColor(pos, normal, -rayDir, diffCol, specCol, phongExp);\n      if( opacity != 1. ) {\n        color *= opacity;\n        vec3 refrCol;\n        refrCol = getRefractedColor(pos, rayDir, normal, index, radius, opacity);\n        refrCol *= 1. - opacity;\n        color += refrCol;\n      }\n      color += getReflectedColor(pos, normal, rayDir, refl);\n    }\n\n    return color;\n  }\n\n  /**\n  * Main function, just determines the direction of the initial ray and\n  * calls intersectWorld()\n  */\n  void main() {\n    vec3 cameraDir;\n    vec3 color;\n\n    cameraDir = normalize(vPosition - cameraPos);\n    color = intersectWorld(cameraPos, cameraDir);\n\n    gl_FragColor = vec4(color, 1.);\n  }\n";
 	/****************************************************/
 	/*
 	* This function loads the shader from the source code
@@ -456,7 +573,7 @@
 
 
 /***/ },
-/* 5 */
+/* 6 */
 /***/ function(module, exports) {
 
 	/*
@@ -487,7 +604,7 @@
 
 
 /***/ },
-/* 6 */
+/* 7 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/*

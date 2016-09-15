@@ -27,7 +27,7 @@ export default class Raytracer {
 
   public lights: Light[];
   public spheres: Sphere[];
-  public ANIMATE: boolean;
+  public Animate: boolean;
 
   /*
   * @class Raytracer
@@ -55,7 +55,7 @@ export default class Raytracer {
     // Initializing spheres array
     this.spheres = [];
     // Initializing flag for whether the raytracer animates
-    this.ANIMATE = false;
+    this.Animate = false;
   }
 
   /*
@@ -209,6 +209,6 @@ export default class Raytracer {
     this.gl.drawArrays(this.gl.TRIANGLE_STRIP, 0, 4);
 
     // Render loop
-    if( this.ANIMATE ) window.requestAnimationFrame(() => { this.render(animate); });
+    if( this.Animate ) window.requestAnimationFrame(() => { this.render(animate); });
   }
 }

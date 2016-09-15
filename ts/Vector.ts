@@ -9,6 +9,8 @@ Vector object
 
 */
 
+import Quaternion from "./Quaternion";
+
 export default class Vector {
   constructor(public x: number,
               public y: number,
@@ -45,6 +47,17 @@ export default class Vector {
     return new Vector(v1.y * v2.z - v1.z * v2.y,
                       v1.z * v2.x - v1.x * v2.z,
                       v1.x * v2.y - v1.y * v2.x);
+  }
+  static rotate(v: Vector, theta: number, axis: Vector): Vector {
+    let p: Quaternion;
+    let u: Vector;
+    let q: Quaternion;
+    p = new Quaternion(0, v.x, v.y, v.z);
+    u = Vector.scale(Math.sin(theta / 2), Vector.normalize(axis));
+    q = new Quaternion(Math.cos(theta / 2), u.x, u.y, u.z);
+    p = Quaternion.multiply(p, q.conjugate());
+    p = Quaternion.multiply(q, p);
+    return new Vector(p.i, p.j, p.k);
   }
   static push(v: Vector, array: number[]): number[] {
     array.push(v.x, v.y, v.z);

@@ -17,7 +17,7 @@ var Raytracer = (function () {
         this.camera = null;
         this.lights = [];
         this.spheres = [];
-        this.ANIMATE = false;
+        this.Animate = false;
     }
     Raytracer.prototype.initBuffers = function () {
         var aWindowPosition;
@@ -102,7 +102,7 @@ var Raytracer = (function () {
         Vector_1.default.push(cameraBottomRight, corners);
         this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array(corners), this.gl.STATIC_DRAW);
         this.gl.drawArrays(this.gl.TRIANGLE_STRIP, 0, 4);
-        if (this.ANIMATE)
+        if (this.Animate)
             window.requestAnimationFrame(function () { _this.render(animate); });
     };
     return Raytracer;
