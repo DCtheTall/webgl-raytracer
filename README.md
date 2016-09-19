@@ -19,11 +19,9 @@ rendering methods:
 - Finds reflectance of objects using the Fresnel equations
 - Renders refracted light using matrix ray tracing
 
-You can view the raytracer in action at:
-http://dylancutler.us/raytracer.html
-
-**Warning:** The ray tracer does not seem to work
+Currently the ray tracer does not seem to work
 on mobile GPUs and on some Mac ones. I used an
 Nvidia Geforce GTX 970 to render the image on
 display, if you do not have a graphics card for
-gaming the raytracer may not entirely work.
+gaming the raytracer may not entirely work. I
+suspect my fragment shader program is responsible.
