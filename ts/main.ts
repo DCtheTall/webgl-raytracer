@@ -25,7 +25,7 @@ function main(): void {
   canvas.style.left = '0px'; canvas.style.top = '0px';
   document.body.appendChild(canvas);
   raytracer = new Raytracer(canvas);
-  initAnimatedScene(raytracer);
+  initStaticScene(raytracer);
 }
 
 window.onload = (event: Event): void => main();
@@ -159,6 +159,5 @@ function initStaticScene(raytracer: Raytracer) {
     })
   );
 
-  function animate(raytracer: Raytracer): void {}
-  setTimeout(() => { raytracer.render(animate); }, 100);
+  setTimeout(() => { raytracer.render(); }, 100);
 }

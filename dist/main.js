@@ -14,7 +14,7 @@ function main() {
     canvas.style.top = '0px';
     document.body.appendChild(canvas);
     raytracer = new Raytracer_1.default(canvas);
-    initAnimatedScene(raytracer);
+    initStaticScene(raytracer);
 }
 window.onload = function (event) { return main(); };
 function initAnimatedScene(raytracer) {
@@ -119,7 +119,6 @@ function initStaticScene(raytracer) {
         refractiveIndex: 2.6,
         opacity: 0.3
     }));
-    function animate(raytracer) { }
-    setTimeout(function () { raytracer.render(animate); }, 100);
+    setTimeout(function () { raytracer.render(); }, 100);
 }
 //# sourceMappingURL=main.js.map

@@ -232,6 +232,7 @@ FRAGMENT_SHADER = `
       lightDir = normalize(lightPos[i] - pos);
       distance = length(lightPos[i] - pos);
 
+      for( int j = 0; j < 4; j++ ) isInShadow[j] = false;
       testForShadow(isInShadow, distance, pos, lightDir, normal);
 
       lMax = 1.; sMax = 1.;
@@ -323,7 +324,7 @@ FRAGMENT_SHADER = `
   * Get reflected color
   */
   vec3 getReflectedColor(vec3 reflStart, vec3 reflNormal, vec3 rayDir, float refl) {
-    const int MAX_DEPTH = 3;
+    const int MAX_DEPTH = 2;
 
     vec3 color;
     float closestDist;

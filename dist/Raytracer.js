@@ -49,7 +49,8 @@ var Raytracer = (function () {
     };
     Raytracer.prototype.render = function (animate) {
         var _this = this;
-        animate(this);
+        if (animate)
+            animate(this);
         var AspRat = this.ASPECT_RATIO;
         var cameraPosition;
         var lightUniform;

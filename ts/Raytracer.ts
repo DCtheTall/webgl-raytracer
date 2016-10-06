@@ -115,9 +115,9 @@ export default class Raytracer {
   * @class Raycaster
   * @method render
   */
-  public render(animate: (raytracer: Raytracer) => void): void {
+  public render(animate?: (raytracer: Raytracer) => void): void {
     // Executes callback for each draw
-    animate(this);
+    if(animate) animate(this);
 
     const AspRat: number = this.ASPECT_RATIO;
     let cameraPosition: WebGLUniformLocation;
