@@ -3,6 +3,8 @@
 WebGL Raytracer written in TypeScript
 and transpiled into ES5 with Webpack.
 
+[Live demo](http://dylancutler.us/raytracer.html)
+
 All of the TypeScript programs are located
 in the ts/ directory. Output ES5 programs
 are located in the dist/ directory.
