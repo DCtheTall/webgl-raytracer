@@ -18,6 +18,7 @@
   },
   "homepage": "https://github.com/DCtheTall/WebGL_Raytracer#readme",
   "dependencies": {
+    "axios": "^0.16.2",
     "dotenv": "^4.0.0",
     "express": "^4.16.2",
     "morgan": "^1.9.0",
