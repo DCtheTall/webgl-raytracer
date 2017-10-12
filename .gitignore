@@ -1,0 +1,14 @@
+# OSX makes these
+.DS_Store
+
+# Old code
+prev/
+
+# Dependencies
+node_modules/
+
+# Environmental vars
+.env
+
+# Compiled TypeScript file
+public/bundle.js
