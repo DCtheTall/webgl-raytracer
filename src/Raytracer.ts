@@ -1,4 +1,5 @@
 import axios, { AxiosResponse } from 'axios';
+import Camera from './Camera';
 
 export default class Raytracer {
   private ASPECT_RATIO: number;
@@ -6,6 +7,7 @@ export default class Raytracer {
   private gl: WebGLRenderingContext;
   private buffer: WebGLBuffer;
   private shaderProgram: WebGLProgram;
+  private camera: Camera;
 
   constructor(canvas: HTMLCanvasElement) {
     this.ASPECT_RATIO = canvas.width / canvas.height;
@@ -13,7 +15,7 @@ export default class Raytracer {
     this.gl.viewport(0, 0, canvas.width, canvas.height);
     this.gl.clearColor(0, 0, 0, 1);
     this.buffer = this.gl.createBuffer();
-    // TODO init camera
+    this.camera = new Camera();
   }
 
   private compileShader(shaderSource: string, shaderType: number): WebGLShader {
