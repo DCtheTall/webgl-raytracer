@@ -1,4 +1,4 @@
-if (!process.env && process.env.NODE_ENV !== 'production') require('dotenv').load();
+if (process.env.NODE_ENV !== 'production') require('dotenv').load();
 const http = require('http');
 const app = require('../app');
 

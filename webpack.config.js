@@ -1,3 +1,14 @@
+if (process.env.NODE_ENV !== 'production') require('dotenv').load();
+
+const webpack = require('webpack');
+const plugins =  [
+  new webpack.DefinePlugin({
+    'process.env': {
+      'NODE_ENV': JSON.stringify(process.env.NODE_ENV),
+    },
+  }),
+];
+
 module.exports = {
   entry: './src/index.ts',
   output: { filename: './public/bundle.js' },
@@ -20,5 +31,5 @@ module.exports = {
       },
     ],
   },
-  plugins: [],
+  plugins,
 };

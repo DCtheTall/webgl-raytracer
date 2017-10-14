@@ -59,7 +59,7 @@ export default class Raytracer {
 
     vertexShaderSource = require('./shaders/vertex.glsl'); // import using glslify-loader into JS string
     fragmentShaderSource = require('./shaders/fragment.glsl');
-
+    if (process.env.NODE_ENV === 'development') console.log(fragmentShaderSource);
     vertexShader = this.compileShader(vertexShaderSource, this.gl.VERTEX_SHADER);
     fragmentShader = this.compileShader(fragmentShaderSource, this.gl.FRAGMENT_SHADER);
     if (vertexShader === null || fragmentShader === null) {
