@@ -1,4 +1,3 @@
-import axios, { AxiosResponse } from 'axios';
 import Camera from './Camera';
 
 export default class Raytracer {
@@ -51,36 +50,31 @@ export default class Raytracer {
     this.sendVecAttribute(aWindowPosition, 2, windowCorners);
   }
 
-  public loadShaders(): Promise<void> {
+  public loadShaders(): void {
     let vertexShaderSource: string;
+    let fragmentShaderSource: string;
+    let vertexShader: WebGLShader;
+    let fragmentShader: WebGLShader;
+    let shaderProgram: WebGLProgram;
 
-    return axios.get('/shaders/vertex.glsl').then((res: AxiosResponse) => {
-      vertexShaderSource = <string>res.data;
-      return axios.get('/shaders/fragment.glsl');
-    })
-    .then((res: AxiosResponse) => {
-      let fragmentShaderSource: string;
-      let vertexShader: WebGLShader;
-      let fragmentShader: WebGLShader;
-      let shaderProgram: WebGLProgram;
+    vertexShaderSource = require('./shaders/vertex.glsl'); // import using glslify-loader into JS string
+    fragmentShaderSource = require('./shaders/fragment.glsl');
 
-      fragmentShaderSource = <string>res.data;
-      vertexShader = this.compileShader(vertexShaderSource, this.gl.VERTEX_SHADER);
-      fragmentShader = this.compileShader(fragmentShaderSource, this.gl.FRAGMENT_SHADER);
-      if (vertexShader === null || fragmentShader === null) {
-        throw new Error('Shader failed to compile. See error message for details.');
-      }
-      shaderProgram = this.gl.createProgram();
-      this.gl.attachShader(shaderProgram, vertexShader);
-      this.gl.attachShader(shaderProgram, fragmentShader);
-      this.gl.linkProgram(shaderProgram);
-      if (!this.gl.getProgramParameter(shaderProgram, this.gl.LINK_STATUS)) {
-        throw new Error('Could not initialize shader program.');
-      }
-      console.log('compiled shaders successfully');
-      this.gl.useProgram(shaderProgram);
-      this.shaderProgram = shaderProgram;
-    });
+    vertexShader = this.compileShader(vertexShaderSource, this.gl.VERTEX_SHADER);
+    fragmentShader = this.compileShader(fragmentShaderSource, this.gl.FRAGMENT_SHADER);
+    if (vertexShader === null || fragmentShader === null) {
+      throw new Error('Shader failed to compile. See error message for details.');
+    }
+    shaderProgram = this.gl.createProgram();
+    this.gl.attachShader(shaderProgram, vertexShader);
+    this.gl.attachShader(shaderProgram, fragmentShader);
+    this.gl.linkProgram(shaderProgram);
+    if (!this.gl.getProgramParameter(shaderProgram, this.gl.LINK_STATUS)) {
+      throw new Error('Could not initialize shader program.');
+    }
+    console.log('compiled shaders successfully');
+    this.gl.useProgram(shaderProgram);
+    this.shaderProgram = shaderProgram;
   }
 
   public render(): void {

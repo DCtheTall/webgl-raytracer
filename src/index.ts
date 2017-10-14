@@ -1,6 +1,6 @@
 import RayTracer from './Raytracer';
 
-function main() {
+function main(): void {
   let canvas: HTMLCanvasElement;
   let sideLength: number;
   let raytracer: RayTracer;
@@ -10,7 +10,8 @@ function main() {
   canvas.width = sideLength;
   canvas.height = sideLength;
   raytracer = new RayTracer(canvas);
-  raytracer.loadShaders().then(() => raytracer.render());
+  raytracer.loadShaders();
+  raytracer.render();
 }
 
 main();

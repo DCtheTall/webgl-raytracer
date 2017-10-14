@@ -10,6 +10,14 @@ module.exports = {
         test: /\.ts$/,
         loader: 'ts-loader',
       },
+      {
+        test: /\.glsl$/,
+        loader: 'raw-loader',
+      },
+      {
+        test: /\.glsl$/,
+        loader: 'glslify-loader',
+      },
     ],
   },
   plugins: [],
