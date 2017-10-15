@@ -1,5 +1,5 @@
 /**
-* Intersection test for a plane at y = 0
+* Ray intersection test for a plane at y = 0
 */
 float intersectPlane(vec3 rayStart, vec3 rayDir) {
   float dist;

@@ -1,19 +1,21 @@
 import Camera from './Camera';
 
 export default class Raytracer {
-  private ASPECT_RATIO: number;
-
+  private aspectRatio: number;
   private gl: WebGLRenderingContext;
-  private buffer: WebGLBuffer;
+  private windowPositionBuffer: WebGLBuffer;
+  private cameraViewDirectionBuffer: WebGLBuffer;
   private shaderProgram: WebGLProgram;
-  private camera: Camera;
+
+  public camera: Camera;
 
   constructor(canvas: HTMLCanvasElement) {
-    this.ASPECT_RATIO = canvas.width / canvas.height;
+    this.aspectRatio = canvas.width / canvas.height;
     this.gl = <WebGLRenderingContext>canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
     this.gl.viewport(0, 0, canvas.width, canvas.height);
     this.gl.clearColor(0, 0, 0, 1);
-    this.buffer = this.gl.createBuffer();
+    this.windowPositionBuffer = this.gl.createBuffer();
+    this.cameraViewDirectionBuffer = this.gl.createBuffer();
     this.camera = new Camera();
   }
 
@@ -25,32 +27,12 @@ export default class Raytracer {
     this.gl.compileShader(shader);
     if (!this.gl.getShaderParameter(shader, this.gl.COMPILE_STATUS)) {
       console.error(`Shader failed to compile: ${this.gl.getShaderInfoLog(shader)}`);
-      console.log('Shader code:', shaderSource);
       return null;
     }
     return shader;
   }
 
-  private sendVecAttribute(attrLocation: number, dimension: number, values: Float32Array): void {
-    this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.buffer);
-    this.gl.vertexAttribPointer(attrLocation, dimension, this.gl.FLOAT, false, 0, 0);
-    this.gl.enableVertexAttribArray(attrLocation);
-    this.gl.bufferData(this.gl.ARRAY_BUFFER, values, this.gl.DYNAMIC_DRAW);
-  }
-
-  private sendAttributes(): void {
-    let windowCorners: Float32Array;
-    let aWindowPosition: number;
-
-    windowCorners = new Float32Array([-1,  1,
-                                      -1, -1,
-                                       1,  1,
-                                       1, -1]);
-    aWindowPosition = this.gl.getAttribLocation(this.shaderProgram, 'a_WindowPosition');
-    this.sendVecAttribute(aWindowPosition, 2, windowCorners);
-  }
-
-  public loadShaders(): void {
+  private createShaderProgram(): void {
     let vertexShaderSource: string;
     let fragmentShaderSource: string;
     let vertexShader: WebGLShader;
@@ -77,9 +59,55 @@ export default class Raytracer {
     this.shaderProgram = shaderProgram;
   }
 
+  private sendVecAttribute(
+    buffer: WebGLBuffer,
+    attrLocation: number,
+    dimension: number,
+    values: Float32Array
+  ): void {
+    this.gl.bindBuffer(this.gl.ARRAY_BUFFER, buffer);
+    this.gl.vertexAttribPointer(attrLocation, dimension, this.gl.FLOAT, false, 0, 0);
+    this.gl.enableVertexAttribArray(attrLocation);
+    this.gl.bufferData(this.gl.ARRAY_BUFFER, values, this.gl.DYNAMIC_DRAW);
+  }
+
+  private sendAttributes(): void {
+    let windowCorners: Float32Array;
+    let aWindowPosition: number;
+    let aCameraViewDirection: number;
+
+    windowCorners = new Float32Array([-1,  1,
+                                      -1, -1,
+                                       1,  1,
+                                       1, -1]);
+    aWindowPosition = this.gl.getAttribLocation(this.shaderProgram, 'a_WindowPosition');
+    this.sendVecAttribute(
+      this.windowPositionBuffer,
+      aWindowPosition,
+      2,
+      windowCorners
+    );
+    aCameraViewDirection = this.gl.getAttribLocation(this.shaderProgram, 'a_CameraViewDirection');
+    this.sendVecAttribute(
+      this.cameraViewDirectionBuffer,
+      aCameraViewDirection,
+      3,
+      this.camera.getCameraViewDirections(this.aspectRatio)
+    );
+  }
+
+  private sendUniforms(): void {
+    let uCameraPosition: WebGLUniformLocation;
+
+    uCameraPosition = this.gl.getUniformLocation(this.shaderProgram, 'u_CameraPosition');
+    this.gl.uniform3fv(uCameraPosition, this.camera.getEye().getElements());
+  }
+
   public render(): void {
+    if (!this.shaderProgram) this.createShaderProgram();
     this.gl.clear(this.gl.COLOR_BUFFER_BIT);
     this.sendAttributes();
+    this.sendUniforms();
     this.gl.drawArrays(this.gl.TRIANGLE_STRIP, 0, 4);
   }
 }

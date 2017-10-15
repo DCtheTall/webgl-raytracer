@@ -1,5 +1,5 @@
 /**
-* Intersection test for spheres
+* Ray intersection test for spheres
 */
 float intersectSphere(vec3 rayStart, vec3 rayDir, vec3 center, float r) {
   vec3 at;

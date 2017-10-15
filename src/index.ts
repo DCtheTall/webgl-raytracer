@@ -10,7 +10,6 @@ function main(): void {
   canvas.width = sideLength;
   canvas.height = sideLength;
   raytracer = new RayTracer(canvas);
-  raytracer.loadShaders();
   raytracer.render();
 }
 
