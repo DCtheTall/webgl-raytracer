@@ -1,4 +1,5 @@
 import Camera from './Camera';
+import Sphere from './Sphere';
 
 export default class Raytracer {
   private aspectRatio: number;
@@ -8,6 +9,7 @@ export default class Raytracer {
   private shaderProgram: WebGLProgram;
 
   public camera: Camera;
+  public spheres: Sphere[];
 
   constructor(canvas: HTMLCanvasElement) {
     this.aspectRatio = canvas.width / canvas.height;
@@ -17,6 +19,7 @@ export default class Raytracer {
     this.windowPositionBuffer = this.gl.createBuffer();
     this.cameraViewDirectionBuffer = this.gl.createBuffer();
     this.camera = new Camera();
+    this.spheres = [];
   }
 
   private compileShader(shaderSource: string, shaderType: number): WebGLShader {
@@ -96,11 +99,29 @@ export default class Raytracer {
     );
   }
 
+  private sendSphereUniforms(sphere: Sphere, i: number): void {
+    let uniformLocation: WebGLUniformLocation;
+
+    uniformLocation = this.gl.getUniformLocation(this.shaderProgram, `u_SpherePositions[${i}]`);
+    this.gl.uniform3fv(uniformLocation, sphere.position.getElements());
+    uniformLocation = this.gl.getUniformLocation(this.shaderProgram, `u_SphereRadii[${i}]`);
+    this.gl.uniform1f(uniformLocation, sphere.radius);
+    uniformLocation = this.gl.getUniformLocation(this.shaderProgram, `u_SphereDiffuseColors[${i}]`);
+    this.gl.uniform3fv(uniformLocation, sphere.diffuseColor);
+  }
+
   private sendUniforms(): void {
     let uCameraPosition: WebGLUniformLocation;
+    let uNumberOfSpheres: WebGLUniformLocation;
 
     uCameraPosition = this.gl.getUniformLocation(this.shaderProgram, 'u_CameraPosition');
     this.gl.uniform3fv(uCameraPosition, this.camera.getEye().getElements());
+
+    uNumberOfSpheres = this.gl.getUniformLocation(this.shaderProgram, 'u_NumberOfSpheres');
+    if (this.spheres.length > 32) throw new Error('Can only have up to 16 spheres without modifying shader');
+    this.gl.uniform1i(uNumberOfSpheres, this.spheres.length);
+
+    this.spheres.forEach(this.sendSphereUniforms.bind(this));
   }
 
   public render(): void {

@@ -7,8 +7,8 @@ export default class Camera {
   private right: Vector;
 
   constructor() {
-    this.eye = new Vector(0, 0, -1);
-    this.at = new Vector(0, 0, 1);
+    this.eye = new Vector(0, 0, 1);
+    this.at = new Vector(0, 0, -1);
     this.up = new Vector(0, 1, 0);
     this.right = Vector.cross(this.at, this.up);
   }
@@ -22,21 +22,20 @@ export default class Camera {
     let bottomRight: Vector;
 
     up = Vector.scale(aspectRatio, this.up);
-    viewDirection = Vector.normalize(Vector.subtract(this.at, this.eye));
     topLeft = Vector.add(
-      viewDirection,
+      this.at,
       Vector.normalize(Vector.subtract(up, this.right))
     );
     bottomLeft = Vector.add(
-      viewDirection,
+      this.at,
       Vector.normalize(Vector.scale(-1, Vector.add(up, this.right)))
     );
     topRight = Vector.add(
-      viewDirection,
+      this.at,
       Vector.normalize(Vector.add(up, this.right))
     );
     bottomRight = Vector.add(
-      viewDirection,
+      this.at,
       Vector.normalize(Vector.subtract(this.right, up))
     );
     return new Float32Array([

@@ -1,4 +1,6 @@
 import RayTracer from './Raytracer';
+import Sphere from './Sphere';
+import Vector from './Vector';
 
 function main(): void {
   let canvas: HTMLCanvasElement;
@@ -10,6 +12,13 @@ function main(): void {
   canvas.width = sideLength;
   canvas.height = sideLength;
   raytracer = new RayTracer(canvas);
+  raytracer.spheres.push(
+    new Sphere({
+      radius: 0.2,
+      diffuseColor: [0, 0, 1],
+      position: new Vector(0, 0, -2),
+    })
+  );
   raytracer.render();
 }
 
