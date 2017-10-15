@@ -1,4 +1,5 @@
 import Camera from './Camera';
+import Light from './Light';
 import Sphere from './Sphere';
 
 export default class Raytracer {
@@ -7,8 +8,10 @@ export default class Raytracer {
   private windowPositionBuffer: WebGLBuffer;
   private cameraViewDirectionBuffer: WebGLBuffer;
   private shaderProgram: WebGLProgram;
+  private ambientLightColor: number[];
 
   public camera: Camera;
+  public lights: Light[];
   public spheres: Sphere[];
 
   constructor(canvas: HTMLCanvasElement) {
@@ -18,7 +21,9 @@ export default class Raytracer {
     this.gl.clearColor(0, 0, 0, 1);
     this.windowPositionBuffer = this.gl.createBuffer();
     this.cameraViewDirectionBuffer = this.gl.createBuffer();
+    this.ambientLightColor = [.1, .1, .1];
     this.camera = new Camera();
+    this.lights = [];
     this.spheres = [];
   }
 
@@ -99,28 +104,53 @@ export default class Raytracer {
     );
   }
 
+  private sendLightUniforms(light: Light, i: number): void {
+    let uniformLocation: WebGLUniformLocation;
+
+    if (this.spheres.length > 8) throw new Error('Can only have up to 8 lights without modifying shader');
+    uniformLocation = this.gl.getUniformLocation(this.shaderProgram, `u_NumberOfLights`);
+    this.gl.uniform1i(uniformLocation, this.lights.length);
+
+    uniformLocation = this.gl.getUniformLocation(this.shaderProgram, `u_LightPositions[${i}]`);
+    this.gl.uniform3fv(uniformLocation, light.position.getElements());
+
+    uniformLocation = this.gl.getUniformLocation(this.shaderProgram, `u_LightColors[${i}]`);
+    this.gl.uniform3fv(uniformLocation, light.color);
+  }
+
   private sendSphereUniforms(sphere: Sphere, i: number): void {
     let uniformLocation: WebGLUniformLocation;
 
+    if (this.spheres.length > 16) throw new Error('Can only have up to 16 spheres without modifying shader');
+    uniformLocation = this.gl.getUniformLocation(this.shaderProgram, 'u_NumberOfSpheres');
+    this.gl.uniform1i(uniformLocation, this.spheres.length);
+
     uniformLocation = this.gl.getUniformLocation(this.shaderProgram, `u_SpherePositions[${i}]`);
     this.gl.uniform3fv(uniformLocation, sphere.position.getElements());
+
     uniformLocation = this.gl.getUniformLocation(this.shaderProgram, `u_SphereRadii[${i}]`);
     this.gl.uniform1f(uniformLocation, sphere.radius);
+
     uniformLocation = this.gl.getUniformLocation(this.shaderProgram, `u_SphereDiffuseColors[${i}]`);
     this.gl.uniform3fv(uniformLocation, sphere.diffuseColor);
+
+    uniformLocation = this.gl.getUniformLocation(this.shaderProgram, `u_SpherePhongExponents[${i}]`);
+    this.gl.uniform1f(uniformLocation, sphere.phongExponent);
+
+    uniformLocation = this.gl.getUniformLocation(this.shaderProgram, `u_SphereSpecularColors[${i}]`);
+    this.gl.uniform3fv(uniformLocation, sphere.specularColor);
   }
 
   private sendUniforms(): void {
-    let uCameraPosition: WebGLUniformLocation;
-    let uNumberOfSpheres: WebGLUniformLocation;
+    let uniformLocation: WebGLUniformLocation;
 
-    uCameraPosition = this.gl.getUniformLocation(this.shaderProgram, 'u_CameraPosition');
-    this.gl.uniform3fv(uCameraPosition, this.camera.getEye().getElements());
+    uniformLocation = this.gl.getUniformLocation(this.shaderProgram, 'u_CameraPosition');
+    this.gl.uniform3fv(uniformLocation, this.camera.getEye().getElements());
 
-    uNumberOfSpheres = this.gl.getUniformLocation(this.shaderProgram, 'u_NumberOfSpheres');
-    if (this.spheres.length > 32) throw new Error('Can only have up to 16 spheres without modifying shader');
-    this.gl.uniform1i(uNumberOfSpheres, this.spheres.length);
+    uniformLocation = this.gl.getUniformLocation(this.shaderProgram, 'u_AmbientLightColor');
+    this.gl.uniform3fv(uniformLocation, this.ambientLightColor);
 
+    this.lights.forEach(this.sendLightUniforms.bind(this));
     this.spheres.forEach(this.sendSphereUniforms.bind(this));
   }
 
