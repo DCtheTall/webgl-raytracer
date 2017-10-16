@@ -21,7 +21,6 @@ export default class Vector {
 
   static normalize(v: Vector): Vector {
     let mag: number;
-
     mag = Vector.mag(v);
     if (mag === 0) {
       throw new Error('cannot normalize the zero vector');
@@ -37,6 +36,12 @@ export default class Vector {
     return new Vector(v1.x - v2.x,
                       v1.y - v2.y,
                       v1.z - v2.z);
+  }
+
+  static times(v1: Vector, v2: Vector): Vector {
+    return new Vector(v1.x * v2.x,
+                      v1.y * v2.y,
+                      v1.z * v2.z);
   }
 
   public getElements(): number[] {

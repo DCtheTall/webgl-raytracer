@@ -2,7 +2,9 @@ precision mediump float;
 
 const int MAXIMUM_NUMBER_OF_SPHERES = 16;
 const int MAXIMUM_NUMBER_OF_LIGHTS = 8;
+const float FLOOR_PHONG_EXPONENT = 50.;
 
+varying vec3 v_CameraViewPosition;
 varying vec3 v_CameraViewDirection;
 
 uniform vec3 u_CameraPosition;
@@ -20,6 +22,9 @@ uniform float u_SpherePhongExponents[MAXIMUM_NUMBER_OF_SPHERES];
 uniform vec3 u_SphereSpecularColors[MAXIMUM_NUMBER_OF_SPHERES];
 
 #pragma glslify: intersectSphere = require('./geometry/intersect-sphere');
+#pragma glslify: intersectPlane = require('./geometry/intersect-plane');
+#pragma glslify: getPlaneDiffuseColor = require('./color/get-plane-diffuse-color');
+#pragma glslify: getPlaneSpecularColor = require('./color/get-plane-specular-color');
 #pragma glslify: getDiffuseColor = require('./color/get-diffuse-color');
 #pragma glslify: getSpecularColor = require('./color/get-specular-color');
 
@@ -39,9 +44,15 @@ vec3 intersectScene(vec3 rayStart, vec3 rayDirection) {
   color = vec3(0.);
   closestDistance = -1.;
 
+  // Testing if the ray intersects the spheres
   for (int i = 0; i < MAXIMUM_NUMBER_OF_SPHERES; i += 1) {
     if (i > u_NumberOfSpheres) break;
-    dist = intersectSphere(rayStart, rayDirection, u_SpherePositions[i], u_SphereRadii[i]);
+    dist = intersectSphere(
+      rayStart,
+      rayDirection,
+      u_SpherePositions[i],
+      u_SphereRadii[i]
+    );
     if ((dist > 0. && closestDistance == -1.) || (dist > 0. && dist < closestDistance)) {
       closestDistance = dist;
       position = rayStart + (dist * rayDirection);
@@ -52,6 +63,19 @@ vec3 intersectScene(vec3 rayStart, vec3 rayDirection) {
     }
   }
 
+  // Testing if the ray interests the ground plane
+  dist = intersectPlane(rayStart, rayDirection);
+  if ((dist > 0. && closestDistance == -1.)
+      || (dist > 0. && dist < closestDistance)) {
+    closestDistance = dist;
+    position = rayStart + (dist * rayDirection);
+    surfaceNormal = vec3(0., 1., 0.);
+    diffuseColor = getPlaneDiffuseColor(position);
+    phongExponent = FLOOR_PHONG_EXPONENT;
+    specularColor = getPlaneSpecularColor(position);
+  }
+
+  // Determine color of the fragment
   if (closestDistance > 0.) {
     for (int i = 0; i < MAXIMUM_NUMBER_OF_LIGHTS; i += 1) {
       if (i > u_NumberOfLights) break;
@@ -82,9 +106,7 @@ vec3 intersectScene(vec3 rayStart, vec3 rayDirection) {
  * MAIM PROGRAM
  */
 void main() {
-  vec3 viewDirection;
   vec3 fragColor;
-  viewDirection = normalize(v_CameraViewDirection - u_CameraPosition);
-  fragColor = intersectScene(u_CameraPosition, viewDirection);
+  fragColor = intersectScene(u_CameraPosition + v_CameraViewPosition, normalize(v_CameraViewDirection));
   gl_FragColor = vec4(fragColor, 1.);
 }

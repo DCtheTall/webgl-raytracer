@@ -81,27 +81,34 @@ export default class Raytracer {
 
   private sendAttributes(): void {
     let windowCorners: Float32Array;
-    let aWindowPosition: number;
-    let aCameraViewDirection: number;
+    let attribLocation: number;
 
     windowCorners = new Float32Array([-1,  1,
                                       -1, -1,
                                        1,  1,
                                        1, -1]);
-    aWindowPosition = this.gl.getAttribLocation(this.shaderProgram, 'a_WindowPosition');
+    attribLocation = this.gl.getAttribLocation(this.shaderProgram, 'a_WindowPosition');
     this.sendVecAttribute(
       this.windowPositionBuffer,
-      aWindowPosition,
+      attribLocation,
       2,
       windowCorners
     );
-    aCameraViewDirection = this.gl.getAttribLocation(this.shaderProgram, 'a_CameraViewDirection');
+    attribLocation = this.gl.getAttribLocation(this.shaderProgram, 'a_CameraViewPosition');
     this.sendVecAttribute(
       this.cameraViewDirectionBuffer,
-      aCameraViewDirection,
+      attribLocation,
+      3,
+      this.camera.getCameraViewPositions(this.aspectRatio)
+    );
+    attribLocation = this.gl.getAttribLocation(this.shaderProgram, 'a_CameraViewDirection');
+    this.sendVecAttribute(
+      this.cameraViewDirectionBuffer,
+      attribLocation,
       3,
       this.camera.getCameraViewDirections(this.aspectRatio)
     );
+    console.log(this.camera.getCameraViewDirections(this.aspectRatio));
   }
 
   private sendLightUniforms(light: Light, i: number): void {
