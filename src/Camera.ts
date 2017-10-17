@@ -2,20 +2,20 @@ import Vector from './Vector';
 
 export default class Camera {
   private eye: Vector;
-  private at: Vector;
+  private viewDirection: Vector;
   private up: Vector;
   private right: Vector;
   private fov: number;
 
   constructor() {
-    this.eye = new Vector(2, 2.5, 5);
-    this.at = new Vector(0, 2, 0);
+    this.eye = new Vector(0, 2, 0);
+    this.viewDirection = new Vector(0, 0, -1);
     this.up = new Vector(0, 1, 0);
-    this.fov = Math.PI / 4;
+    this.fov = Math.PI / 3;
   }
 
   public getCameraViewPositions(aspectRatio: number): Float32Array {
-    let viewDirection: Vector;
+    let lookAt: Vector;
     let u: Vector;
     let v: Vector;
     let viewPlaneHalfWidth: number;
@@ -27,27 +27,27 @@ export default class Camera {
     let topRight: Vector;
     let bottomRight: Vector;
 
-    viewDirection = Vector.subtract(this.at, this.eye);
-    u = Vector.normalize(Vector.cross(viewDirection, this.up));
-    v = Vector.normalize(Vector.cross(u, viewDirection));
+    lookAt = Vector.add(this.eye, this.viewDirection);
+    u = Vector.normalize(Vector.cross(this.viewDirection, this.up));
+    v = Vector.normalize(Vector.cross(u, this.viewDirection));
     viewPlaneHalfWidth = Math.tan(this.fov / 2);
     viewPlaneHalfHeight = viewPlaneHalfWidth / aspectRatio;
     right = Vector.scale(viewPlaneHalfWidth, u);
     up = Vector.scale(viewPlaneHalfHeight, v);
     topLeft = Vector.add(
-      this.at,
+      lookAt,
       Vector.subtract(up, right)
     );
     bottomLeft = Vector.subtract(
-      this.at,
+      lookAt,
       Vector.add(up, right)
     );
     topRight = Vector.add(
-      this.at,
+      lookAt,
       Vector.add(up, right)
     );
     bottomRight = Vector.add(
-      this.at,
+      lookAt,
       Vector.subtract(right, up)
     );
 
@@ -60,7 +60,6 @@ export default class Camera {
   }
 
   public getCameraViewDirections(aspectRatio: number): Float32Array {
-    let viewDirection: Vector;
     let u: Vector;
     let v: Vector;
     let viewPlaneHalfWidth: number;
@@ -72,27 +71,26 @@ export default class Camera {
     let topRight: Vector;
     let bottomRight: Vector;
 
-    viewDirection = Vector.subtract(this.at, this.eye);
-    u = Vector.normalize(Vector.cross(viewDirection, this.up));
-    v = Vector.normalize(Vector.cross(u, viewDirection));
+    u = Vector.normalize(Vector.cross(this.viewDirection, this.up));
+    v = Vector.normalize(Vector.cross(u, this.viewDirection));
     viewPlaneHalfWidth = Math.tan(this.fov / 2);
     viewPlaneHalfHeight = viewPlaneHalfWidth / aspectRatio;
     right = Vector.scale(2 * viewPlaneHalfWidth, u);
     up = Vector.scale(2 * viewPlaneHalfHeight, v);
     topLeft = Vector.add(
-      viewDirection,
+      this.viewDirection,
       Vector.subtract(up, right)
     );
     bottomLeft = Vector.subtract(
-      viewDirection,
+      this.viewDirection,
       Vector.add(up, right)
     );
     topRight = Vector.add(
-      viewDirection,
+      this.viewDirection,
       Vector.add(up, right)
     );
     bottomRight = Vector.add(
-      viewDirection,
+      this.viewDirection,
       Vector.subtract(right, up)
     );
 

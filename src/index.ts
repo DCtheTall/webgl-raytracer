@@ -11,13 +11,13 @@ function main(): void {
   canvas = <HTMLCanvasElement>document.getElementById('webgl-canvas');
   sideLength = window.innerWidth > 550 ? 500 : 300;
   canvas.width = sideLength;
-  canvas.height = sideLength;
+  canvas.height = sideLength - 100;
   raytracer = new RayTracer(canvas);
   raytracer.spheres.push(
     new Sphere({
       radius: 0.5,
       diffuseColor: [0.2, 0.2, 1],
-      position: new Vector(-1, 2, -2),
+      position: new Vector(0, 2, -1.5),
       phongExponent: 50,
       specularColor: [0.7, 0.8, 1],
     })
