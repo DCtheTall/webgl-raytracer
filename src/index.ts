@@ -17,7 +17,7 @@ function main(): void {
     new Sphere({
       radius: 0.5,
       diffuseColor: [0.2, 0.2, 1],
-      position: new Vector(0, 2, -1.5),
+      position: new Vector(0, 1, -1.5),
       phongExponent: 50,
       specularColor: [0.7, 0.8, 1],
     })

@@ -21,12 +21,11 @@ uniform vec3 u_SphereDiffuseColors[MAXIMUM_NUMBER_OF_SPHERES];
 uniform float u_SpherePhongExponents[MAXIMUM_NUMBER_OF_SPHERES];
 uniform vec3 u_SphereSpecularColors[MAXIMUM_NUMBER_OF_SPHERES];
 
-#pragma glslify: intersectSphere = require('./geometry/intersect-sphere');
-#pragma glslify: intersectPlane = require('./geometry/intersect-plane');
 #pragma glslify: getPlaneDiffuseColor = require('./color/get-plane-diffuse-color');
 #pragma glslify: getPlaneSpecularColor = require('./color/get-plane-specular-color');
-#pragma glslify: getDiffuseColor = require('./color/get-diffuse-color');
-#pragma glslify: getSpecularColor = require('./color/get-specular-color');
+#pragma glslify: getNaturalColor = require('./color/get-natural-color', MAXIMUM_NUMBER_OF_LIGHTS=MAXIMUM_NUMBER_OF_LIGHTS, MAXIMUM_NUMBER_OF_SPHERES=MAXIMUM_NUMBER_OF_SPHERES);
+#pragma glslify: intersectPlane = require('./geometry/intersect-plane');
+#pragma glslify: intersectSphere = require('./geometry/intersect-sphere');
 
 /*
  * Ray intersection test for the scene
@@ -77,26 +76,21 @@ vec3 intersectScene(vec3 rayStart, vec3 rayDirection) {
 
   // Determine color of the fragment
   if (closestDistance > 0.) {
-    for (int i = 0; i < MAXIMUM_NUMBER_OF_LIGHTS; i += 1) {
-      if (i > u_NumberOfLights) break;
-      color += diffuseColor * u_AmbientLightColor;
-      color += getDiffuseColor(
-        u_LightPositions[i],
-        u_LightColors[i],
-        position,
-        surfaceNormal,
-        diffuseColor
-      );
-      color += getSpecularColor(
-        u_LightPositions[i],
-        u_LightColors[i],
-        rayDirection,
-        position,
-        surfaceNormal,
-        phongExponent,
-        specularColor
-      );
-    }
+    color = getNaturalColor(
+      u_NumberOfLights,
+      u_AmbientLightColor,
+      diffuseColor,
+      phongExponent,
+      specularColor,
+      surfaceNormal,
+      rayDirection,
+      position,
+      u_NumberOfSpheres,
+      u_LightPositions,
+      u_LightColors,
+      u_SpherePositions,
+      u_SphereRadii
+    );
   }
 
   return color;

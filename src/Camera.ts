@@ -8,7 +8,7 @@ export default class Camera {
   private fov: number;
 
   constructor() {
-    this.eye = new Vector(0, 2, 0);
+    this.eye = new Vector(0, 1, 0);
     this.viewDirection = new Vector(0, 0, -1);
     this.up = new Vector(0, 1, 0);
     this.fov = Math.PI / 3;
