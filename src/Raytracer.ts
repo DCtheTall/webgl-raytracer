@@ -62,7 +62,7 @@ export default class Raytracer {
     if (!this.gl.getProgramParameter(shaderProgram, this.gl.LINK_STATUS)) {
       throw new Error('Could not initialize shader program.');
     }
-    console.log('compiled shaders successfully');
+    if (process.env.NODE_ENV === 'development') console.log('compiled shaders successfully');
     this.gl.useProgram(shaderProgram);
     this.shaderProgram = shaderProgram;
   }

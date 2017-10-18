@@ -23,9 +23,9 @@ uniform vec3 u_SphereSpecularColors[MAXIMUM_NUMBER_OF_SPHERES];
 
 #pragma glslify: getPlaneDiffuseColor = require('./color/get-plane-diffuse-color');
 #pragma glslify: getPlaneSpecularColor = require('./color/get-plane-specular-color');
-#pragma glslify: getNaturalColor = require('./color/get-natural-color', MAXIMUM_NUMBER_OF_LIGHTS=MAXIMUM_NUMBER_OF_LIGHTS, MAXIMUM_NUMBER_OF_SPHERES=MAXIMUM_NUMBER_OF_SPHERES);
 #pragma glslify: intersectPlane = require('./geometry/intersect-plane');
 #pragma glslify: intersectSphere = require('./geometry/intersect-sphere');
+#pragma glslify: getNaturalColor = require('./color/get-natural-color', MAXIMUM_NUMBER_OF_LIGHTS=MAXIMUM_NUMBER_OF_LIGHTS, MAXIMUM_NUMBER_OF_SPHERES=MAXIMUM_NUMBER_OF_SPHERES, spherePositions=spherePositions, sphereRadii=sphereRadii);
 
 /*
  * Ray intersection test for the scene

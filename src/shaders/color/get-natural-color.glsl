@@ -1,6 +1,6 @@
 #pragma glslify: getDiffuseColor = require('./get-diffuse-color');
 #pragma glslify: getSpecularColor = require('./get-specular-color');
-// #pragma glslify: testForShadow = require('../optics/test-for-shadow', MAXIMUM_NUMBER_OF_SPHERES=MAXIMUM_NUMBER_OF_SPHERES);
+#pragma glslify: testForShadow = require('../optics/test-for-shadow', MAXIMUM_NUMBER_OF_SPHERES=MAXIMUM_NUMBER_OF_SPHERES, spherePositions=spherePositions, sphereRadii=sphereRadii);
 
 vec3 getNaturalColor(
   int numberOfLights,
@@ -29,16 +29,16 @@ vec3 getNaturalColor(
     lambertianMax = 1.;
     specularMax = 1.;
     for (int j = 0; j < 4; j += 1) isInShadow[j] = false;
-    // testForShadow(
-    //   position,
-    //   reflect(rayDirection, surfaceNormal),
-    //   surfaceNormal,
-    //   length(lightPositions[i] - position),
-    //   numberOfSpheres,
-    //   spherePositions,
-    //   sphereRadii,
-    //   isInShadow
-    // );
+    testForShadow(
+      position,
+      lightPositions[i],
+      surfaceNormal,
+      length(lightPositions[i] - position),
+      numberOfSpheres,
+      spherePositions,
+      sphereRadii,
+      isInShadow
+    );
     for (int j = 0; j < 4; j += 1) {
       if (isInShadow[j]) {
         lambertianMax -= .2;

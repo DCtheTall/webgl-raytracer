@@ -11,7 +11,7 @@ export default class Camera {
     this.eye = new Vector(0, 1, 0);
     this.viewDirection = new Vector(0, 0, -1);
     this.up = new Vector(0, 1, 0);
-    this.fov = Math.PI / 3;
+    this.fov = Math.PI / 4;
   }
 
   public getCameraViewPositions(aspectRatio: number): Float32Array {
@@ -31,7 +31,7 @@ export default class Camera {
     u = Vector.normalize(Vector.cross(this.viewDirection, this.up));
     v = Vector.normalize(Vector.cross(u, this.viewDirection));
     viewPlaneHalfWidth = Math.tan(this.fov / 2);
-    viewPlaneHalfHeight = viewPlaneHalfWidth / aspectRatio;
+    viewPlaneHalfHeight = viewPlaneHalfWidth ;
     right = Vector.scale(viewPlaneHalfWidth, u);
     up = Vector.scale(viewPlaneHalfHeight, v);
     topLeft = Vector.add(
