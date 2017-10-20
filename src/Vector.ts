@@ -1,3 +1,5 @@
+import Quaternion from './Quaternion';
+
 export default class Vector {
   constructor(public x: number,
               public y: number,
@@ -26,6 +28,18 @@ export default class Vector {
       throw new Error('cannot normalize the zero vector');
     }
     return Vector.scale((1 / mag), v);
+  }
+
+  static rotate(v: Vector, theta: number, axis: Vector): Vector {
+    let p: Quaternion;
+    let u: Vector;
+    let q: Quaternion;
+    p = new Quaternion(0, v.x, v.y, v.z);
+    u = Vector.scale(Math.sin(theta / 2), Vector.normalize(axis));
+    q = new Quaternion(Math.cos(theta / 2), u.x, u.y, u.z);
+    p = Quaternion.multiply(p, q.conjugate());
+    p = Quaternion.multiply(q, p);
+    return new Vector(p.i, p.j, p.k);
   }
 
   static scale(k: number, v: Vector): Vector {

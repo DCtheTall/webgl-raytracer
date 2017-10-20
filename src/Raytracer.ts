@@ -21,7 +21,7 @@ export default class Raytracer {
     this.gl.clearColor(0, 0, 0, 1);
     this.windowPositionBuffer = this.gl.createBuffer();
     this.cameraViewDirectionBuffer = this.gl.createBuffer();
-    this.ambientLightColor = [.1, .1, .1];
+    this.ambientLightColor = [.2, .2, .2];
     this.camera = new Camera();
     this.lights = [];
     this.spheres = [];
