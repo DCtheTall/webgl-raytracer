@@ -1,6 +1,6 @@
 #pragma glslify: getDiffuseColor = require('./get-diffuse-color');
 #pragma glslify: getSpecularColor = require('./get-specular-color');
-#pragma glslify: testForShadow = require('../optics/test-for-shadow', MAXIMUM_NUMBER_OF_SPHERES=MAXIMUM_NUMBER_OF_SPHERES, spherePositions=spherePositions, sphereRadii=sphereRadii);
+#pragma glslify: testForShadow = require('../optics/test-for-shadow', MAXIMUM_NUMBER_OF_SPHERES=MAXIMUM_NUMBER_OF_SPHERES, spherePositions=spherePositions, sphereRadii=sphereRadii, cubeMinExtent=cubeMinExtent, cubeMaxExtent=cubeMaxExtent);
 
 vec3 getNaturalColor(
   int numberOfLights,
@@ -15,7 +15,9 @@ vec3 getNaturalColor(
   in vec3 lightPositions[MAXIMUM_NUMBER_OF_LIGHTS],
   in vec3 lightColors[MAXIMUM_NUMBER_OF_LIGHTS],
   in vec3 spherePositions[MAXIMUM_NUMBER_OF_SPHERES],
-  in float sphereRadii[MAXIMUM_NUMBER_OF_SPHERES]
+  in float sphereRadii[MAXIMUM_NUMBER_OF_SPHERES],
+  in vec3 cubeMinExtent,
+  in vec3 cubeMaxExtent
 ) {
   vec3 color;
   color = vec3(0.);
@@ -37,6 +39,8 @@ vec3 getNaturalColor(
       numberOfSpheres,
       spherePositions,
       sphereRadii,
+      cubeMinExtent,
+      cubeMaxExtent,
       isInShadow
     );
     for (int j = 0; j < 4; j += 1) {

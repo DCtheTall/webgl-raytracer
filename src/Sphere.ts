@@ -1,6 +1,6 @@
 import Vector from './Vector';
 
-export interface SphereInterface {
+export interface SphereParameters {
   radius: number;
   position: Vector;
   diffuseColor: number[];
@@ -8,18 +8,24 @@ export interface SphereInterface {
   specularColor: number[];
 }
 
-export default class Sphere implements SphereInterface {
+export default class Sphere {
   public radius: number;
   public position: Vector;
   public diffuseColor: number[];
   public phongExponent: number;
   public specularColor: number[];
 
-  constructor(params: SphereInterface) {
-    this.radius = params.radius;
-    this.position = params.position;
-    this.diffuseColor = params.diffuseColor;
-    this.phongExponent = params.phongExponent;
-    this.specularColor = params.specularColor;
+  constructor({
+    radius,
+    position,
+    diffuseColor,
+    phongExponent,
+    specularColor,
+  }: SphereParameters) {
+    this.radius = radius;
+    this.position = position;
+    this.diffuseColor = diffuseColor;
+    this.phongExponent = phongExponent;
+    this.specularColor = specularColor;
   }
 }

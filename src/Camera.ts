@@ -8,8 +8,8 @@ export default class Camera {
   private fov: number;
 
   constructor() {
-    this.eye = new Vector(0, 0.5, 0);
-    this.viewDirection = Vector.normalize(new Vector(0, 0.2, -1));
+    this.eye = new Vector(-0.5, 1.2, 2);
+    this.viewDirection = Vector.normalize(new Vector(0, 0, -1));
     this.up = new Vector(0, 1, 0);
     this.fov = Math.PI / 4;
   }
@@ -73,7 +73,7 @@ export default class Camera {
 
     u = Vector.normalize(Vector.cross(this.viewDirection, this.up));
     v = Vector.normalize(Vector.cross(u, this.viewDirection));
-    viewPlaneHalfWidth = Math.tan(this.fov / 2);
+    viewPlaneHalfWidth = 1 / 2;
     viewPlaneHalfHeight = viewPlaneHalfWidth / aspectRatio;
     right = Vector.scale(2 * viewPlaneHalfWidth, u);
     up = Vector.scale(2 * viewPlaneHalfHeight, v);

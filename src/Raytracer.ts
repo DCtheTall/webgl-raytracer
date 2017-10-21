@@ -1,6 +1,7 @@
 import Camera from './Camera';
 import Light from './Light';
 import Sphere from './Sphere';
+import Cube from './Cube';
 
 export default class Raytracer {
   private aspectRatio: number;
@@ -13,6 +14,7 @@ export default class Raytracer {
   public camera: Camera;
   public lights: Light[];
   public spheres: Sphere[];
+  public cube: Cube;
 
   constructor(canvas: HTMLCanvasElement) {
     this.aspectRatio = canvas.width / canvas.height;
@@ -25,6 +27,7 @@ export default class Raytracer {
     this.camera = new Camera();
     this.lights = [];
     this.spheres = [];
+    this.cube = null;
   }
 
   private compileShader(shaderSource: string, shaderType: number): WebGLShader {
@@ -148,6 +151,16 @@ export default class Raytracer {
     this.gl.uniform3fv(uniformLocation, sphere.specularColor);
   }
 
+  private sendCubeUniforms(): void {
+    let uniformLocation: WebGLUniformLocation;
+
+    uniformLocation = this.gl.getUniformLocation(this.shaderProgram, 'u_CubeMinExtent');
+    this.gl.uniform3fv(uniformLocation, this.cube.minExtent.getElements());
+
+    uniformLocation = this.gl.getUniformLocation(this.shaderProgram, 'u_CubeMaxExtent');
+    this.gl.uniform3fv(uniformLocation, this.cube.maxExtent.getElements());
+  }
+
   private sendUniforms(): void {
     let uniformLocation: WebGLUniformLocation;
 
@@ -159,6 +172,7 @@ export default class Raytracer {
 
     this.lights.forEach(this.sendLightUniforms.bind(this));
     this.spheres.forEach(this.sendSphereUniforms.bind(this));
+    this.sendCubeUniforms();
   }
 
   public render(): void {

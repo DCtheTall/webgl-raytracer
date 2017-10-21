@@ -1,7 +1,7 @@
 /**
- * Ray intersection test for a coaxial cube
+ * Gets the normal vector on the cube where the ray intersects the cube
  */
-float intersectCube(
+vec3 getCubeNormal(
   vec3 rayStart,
   vec3 rayDirection,
   in vec3 cubeMinExtent,
@@ -34,8 +34,11 @@ float intersectCube(
   if (tEnter > tNear) tNear = tEnter;
   if (tExit < tFar) tFar = tExit;
 
-  if (tNear < tFar) return tNear;
-  return -1.;
+  if (tNear == min(tMin.x, tMax.x) && tNear > 0.) return vec3(1., 0., 0.);
+  if (tNear == min(tMin.x, tMax.x)) return vec3(-1., 0., 0.);
+  if (tNear == min(tMin.y, tMax.y)) return vec3(0, 1., 0.);
+  if (tNear == min(tMin.z, tMax.z) && tNear > 0.) return vec3(0., 0., 1.);
+  return vec3(0., 0., -1.);
 }
 
-#pragma glslify: export(intersectCube);
+#pragma glslify: export(getCubeNormal);

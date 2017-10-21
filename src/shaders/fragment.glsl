@@ -21,10 +21,15 @@ uniform vec3 u_SphereDiffuseColors[MAXIMUM_NUMBER_OF_SPHERES];
 uniform float u_SpherePhongExponents[MAXIMUM_NUMBER_OF_SPHERES];
 uniform vec3 u_SphereSpecularColors[MAXIMUM_NUMBER_OF_SPHERES];
 
+uniform vec3 u_CubeMinExtent;
+uniform vec3 u_CubeMaxExtent;
+
 #pragma glslify: getPlaneDiffuseColor = require('./color/get-plane-diffuse-color');
 #pragma glslify: getPlaneSpecularColor = require('./color/get-plane-specular-color');
 #pragma glslify: intersectPlane = require('./geometry/intersect-plane');
 #pragma glslify: intersectSphere = require('./geometry/intersect-sphere');
+#pragma glslify: intersectCube = require('./geometry/intersect-cube');
+#pragma glslify: getCubeNormal = require('./geometry/get-cube-normal');
 #pragma glslify: getNaturalColor = require('./color/get-natural-color', MAXIMUM_NUMBER_OF_LIGHTS=MAXIMUM_NUMBER_OF_LIGHTS, MAXIMUM_NUMBER_OF_SPHERES=MAXIMUM_NUMBER_OF_SPHERES, spherePositions=spherePositions, sphereRadii=sphereRadii);
 
 /*
@@ -62,6 +67,18 @@ vec3 intersectScene(vec3 rayStart, vec3 rayDirection) {
     }
   }
 
+  // Testing if the ray intersects the cube
+  dist = intersectCube(rayStart, rayDirection, u_CubeMinExtent, u_CubeMaxExtent);
+  if ((dist > 0. && closestDistance == -1.)
+      || (dist > 0. && dist < closestDistance)) {
+    closestDistance = dist;
+    position = rayStart + (dist * rayDirection);
+    surfaceNormal = getCubeNormal(rayStart, rayDirection, u_CubeMinExtent, u_CubeMaxExtent);
+    diffuseColor = vec3(0., 0., 1.);
+    phongExponent = 50.;
+    specularColor = vec3(0.);
+  }
+
   // Testing if the ray interests the ground plane
   dist = intersectPlane(rayStart, rayDirection);
   if ((dist > 0. && closestDistance == -1.)
@@ -89,7 +106,9 @@ vec3 intersectScene(vec3 rayStart, vec3 rayDirection) {
       u_LightPositions,
       u_LightColors,
       u_SpherePositions,
-      u_SphereRadii
+      u_SphereRadii,
+      u_CubeMinExtent,
+      u_CubeMaxExtent
     );
   }
 
