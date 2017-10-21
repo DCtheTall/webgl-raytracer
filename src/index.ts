@@ -21,6 +21,7 @@ function main(): void {
     phongExponent: 50,
     specularColor: [1, 1, 1],
   })
+  raytracer.cube.rotateY(Math.PI / 6);
   raytracer.spheres.push(
     // new Sphere({
     //   radius: 0.5,

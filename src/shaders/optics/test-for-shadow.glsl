@@ -24,8 +24,11 @@ float intersectCube(
   vec3 rayStart,
   vec3 rayDirection,
   in vec3 cubeMinExtent,
-  in vec3 cubeMaxExtent
+  in vec3 cubeMaxExtent,
+  in mat3 cubeRotationInverse
 ) {
+  vec3 start;
+  vec3 direction;
   float tNear;
   float tFar;
   vec3 tMin;
@@ -33,10 +36,13 @@ float intersectCube(
   float tEnter;
   float tExit;
 
+  start = cubeRotationInverse * rayStart;
+  direction = cubeRotationInverse * rayDirection;
+
   tNear = -1000000000.;
   tFar = 1000000000.;
-  tMin = (cubeMinExtent - rayStart) / rayDirection;
-  tMax = (cubeMaxExtent - rayStart) / rayDirection;
+  tMin = (cubeMinExtent - start) / direction;
+  tMax = (cubeMaxExtent - start) / direction;
 
   tEnter = min(tMin.x, tMax.x);
   tExit = max(tMin.x, tMax.x);
@@ -70,6 +76,7 @@ void testForShadow(
   in float sphereRadii[MAXIMUM_NUMBER_OF_SPHERES],
   in vec3 cubeMinExtent,
   in vec3 cubeMaxExtent,
+  in mat3 cubeRotationInverse,
   inout bool inShadow[4]
 ) {
   vec3 rayDirection;
@@ -97,11 +104,17 @@ void testForShadow(
       if (i > numberOfSpheres) break;
 
       if (length(ds) != 0.) ds = r * normalize(ds);
-      dist = intersectSphere(rayStart, rayDirection + ds, spherePositions[i], sphereRadii[i]);
+      dist = intersectSphere(rayStart, normalize(rayDirection + ds), spherePositions[i], sphereRadii[i]);
       if (dist > 0. && dist < distanceToLight) inShadow[j] = true;
     }
 
-    dist = intersectCube(rayStart, rayDirection + ds, cubeMinExtent, cubeMaxExtent);
+    dist = intersectCube(
+      rayStart,
+      normalize(rayDirection + ds),
+      cubeMinExtent,
+      cubeMaxExtent,
+      cubeRotationInverse
+    );
     if (dist > 0. && dist < distanceToLight) inShadow[j] = true;
   }
 }

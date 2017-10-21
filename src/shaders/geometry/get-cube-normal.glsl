@@ -5,8 +5,11 @@ vec3 getCubeNormal(
   vec3 rayStart,
   vec3 rayDirection,
   in vec3 cubeMinExtent,
-  in vec3 cubeMaxExtent
+  in vec3 cubeMaxExtent,
+  in mat3 cubeRotationInverse
 ) {
+  vec3 start;
+  vec3 direction;
   float tNear;
   float tFar;
   vec3 tMin;
@@ -14,10 +17,13 @@ vec3 getCubeNormal(
   float tEnter;
   float tExit;
 
+  start = cubeRotationInverse * rayStart;
+  direction = cubeRotationInverse * rayDirection;
+
   tNear = -1000000000.;
   tFar = 1000000000.;
-  tMin = (cubeMinExtent - rayStart) / rayDirection;
-  tMax = (cubeMaxExtent - rayStart) / rayDirection;
+  tMin = (cubeMinExtent - start) / direction;
+  tMax = (cubeMaxExtent - start) / direction;
 
   tEnter = min(tMin.x, tMax.x);
   tExit = max(tMin.x, tMax.x);

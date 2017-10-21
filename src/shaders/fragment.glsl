@@ -23,6 +23,7 @@ uniform vec3 u_SphereSpecularColors[MAXIMUM_NUMBER_OF_SPHERES];
 
 uniform vec3 u_CubeMinExtent;
 uniform vec3 u_CubeMaxExtent;
+uniform mat3 u_CubeRotationInverse;
 
 #pragma glslify: getPlaneDiffuseColor = require('./color/get-plane-diffuse-color');
 #pragma glslify: getPlaneSpecularColor = require('./color/get-plane-specular-color');
@@ -30,7 +31,7 @@ uniform vec3 u_CubeMaxExtent;
 #pragma glslify: intersectSphere = require('./geometry/intersect-sphere');
 #pragma glslify: intersectCube = require('./geometry/intersect-cube');
 #pragma glslify: getCubeNormal = require('./geometry/get-cube-normal');
-#pragma glslify: getNaturalColor = require('./color/get-natural-color', MAXIMUM_NUMBER_OF_LIGHTS=MAXIMUM_NUMBER_OF_LIGHTS, MAXIMUM_NUMBER_OF_SPHERES=MAXIMUM_NUMBER_OF_SPHERES, spherePositions=spherePositions, sphereRadii=sphereRadii);
+#pragma glslify: getNaturalColor = require('./color/get-natural-color', MAXIMUM_NUMBER_OF_LIGHTS=MAXIMUM_NUMBER_OF_LIGHTS, MAXIMUM_NUMBER_OF_SPHERES=MAXIMUM_NUMBER_OF_SPHERES, spherePositions=spherePositions, sphereRadii=sphereRadii, cubeRotationInverse=cubeRotationInverse);
 
 /*
  * Ray intersection test for the scene
@@ -68,12 +69,24 @@ vec3 intersectScene(vec3 rayStart, vec3 rayDirection) {
   }
 
   // Testing if the ray intersects the cube
-  dist = intersectCube(rayStart, rayDirection, u_CubeMinExtent, u_CubeMaxExtent);
+  dist = intersectCube(
+    rayStart,
+    rayDirection,
+    u_CubeMinExtent,
+    u_CubeMaxExtent,
+    u_CubeRotationInverse
+  );
   if ((dist > 0. && closestDistance == -1.)
       || (dist > 0. && dist < closestDistance)) {
     closestDistance = dist;
     position = rayStart + (dist * rayDirection);
-    surfaceNormal = getCubeNormal(rayStart, rayDirection, u_CubeMinExtent, u_CubeMaxExtent);
+    surfaceNormal = getCubeNormal(
+      rayStart,
+      rayDirection,
+      u_CubeMinExtent,
+      u_CubeMaxExtent,
+      u_CubeRotationInverse
+    );
     diffuseColor = vec3(0., 0., 1.);
     phongExponent = 50.;
     specularColor = vec3(0.);
@@ -108,7 +121,8 @@ vec3 intersectScene(vec3 rayStart, vec3 rayDirection) {
       u_SpherePositions,
       u_SphereRadii,
       u_CubeMinExtent,
-      u_CubeMaxExtent
+      u_CubeMaxExtent,
+      u_CubeRotationInverse
     );
   }
 

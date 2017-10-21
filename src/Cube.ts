@@ -10,9 +10,10 @@ export interface CubeParameters {
 }
 
 export default class Cube {
+  private thetaY: number;
+
   public minExtent: Vector;
   public maxExtent: Vector;
-  public thetaY: number;
   public diffuseColor: number[];
   public phongExponent: number;
   public specularColor: number[];
@@ -31,5 +32,19 @@ export default class Cube {
     this.diffuseColor = diffuseColor;
     this.phongExponent = phongExponent;
     this.specularColor = specularColor;
+  }
+
+  public rotateY(theta: number): void {
+    this.thetaY = theta;
+  }
+
+  public getInverseRotationMatrix(): number[] {
+    let sin: number;
+    let cos: number;
+    sin = Math.sin(-this.thetaY);
+    cos = Math.cos(this.thetaY);
+    return [cos, 0, -sin,
+              0, 1,    0,
+            sin, 0,  cos];
   }
 }
