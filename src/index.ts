@@ -14,22 +14,15 @@ function main(): void {
   canvas.height = sideLength - 100;
   raytracer = new RayTracer(canvas);
   raytracer.cube = new Cube({
-    x: 0.8,
-    y: 0.6,
-    z: 0.8,
+    minExtent: new Vector(-0.3, -0.3, -0.3),
+    maxExtent: new Vector(0.3, 0.3, 0.3),
     diffuseColor: [1, 0.2, 0.2],
     phongExponent: 50,
     specularColor: [1, 1, 1],
-  })
-  raytracer.cube.rotateY(Math.PI / 6);
+    position: new Vector(0.5, 0.6, 0),
+  });
+  raytracer.cube.rotateOnAxis(-Math.PI / 4, new Vector(2, 1, 0));
   raytracer.spheres.push(
-    // new Sphere({
-    //   radius: 0.5,
-    //   diffuseColor: [0.2, 0.2, 1],
-    //   position: new Vector(0, 0.5, -1.75),
-    //   phongExponent: 50,
-    //   specularColor: [0.7, 0.8, 1],
-    // }),
     new Sphere({
       radius: 0.2,
       diffuseColor: [1, 0.2, 0.2],

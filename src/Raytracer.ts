@@ -162,6 +162,15 @@ export default class Raytracer {
 
     uniformLocation = this.gl.getUniformLocation(this.shaderProgram, 'u_CubeRotationInverse');
     this.gl.uniformMatrix3fv(uniformLocation, false, this.cube.getInverseRotationMatrix());
+
+    uniformLocation = this.gl.getUniformLocation(this.shaderProgram, 'u_CubePosition');
+    this.gl.uniform3fv(uniformLocation, this.cube.position.getElements());
+
+    uniformLocation = this.gl.getUniformLocation(this.shaderProgram, 'u_CubeDiffuseColor');
+    this.gl.uniform3fv(uniformLocation, this.cube.diffuseColor);
+
+    uniformLocation = this.gl.getUniformLocation(this.shaderProgram, 'u_CubeSpecularColor');
+    this.gl.uniform3fv(uniformLocation, this.cube.specularColor);
   }
 
   private sendUniforms(): void {

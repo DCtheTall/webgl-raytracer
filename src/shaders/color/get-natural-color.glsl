@@ -18,7 +18,8 @@ vec3 getNaturalColor(
   in float sphereRadii[MAXIMUM_NUMBER_OF_SPHERES],
   in vec3 cubeMinExtent,
   in vec3 cubeMaxExtent,
-  in mat3 cubeRotationInverse
+  in mat3 cubeRotationInverse,
+  in vec3 cubePosition
 ) {
   vec3 color;
   color = vec3(0.);
@@ -43,6 +44,7 @@ vec3 getNaturalColor(
       cubeMinExtent,
       cubeMaxExtent,
       cubeRotationInverse,
+      cubePosition,
       isInShadow
     );
     for (int j = 0; j < 4; j += 1) {

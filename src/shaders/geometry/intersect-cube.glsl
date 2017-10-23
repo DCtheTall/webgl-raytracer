@@ -6,7 +6,8 @@ float intersectCube(
   vec3 rayDirection,
   in vec3 cubeMinExtent,
   in vec3 cubeMaxExtent,
-  in mat3 cubeRotationInverse
+  in mat3 cubeRotationInverse,
+  in vec3 cubePosition
 ) {
   vec3 start;
   vec3 direction;
@@ -17,7 +18,8 @@ float intersectCube(
   float tEnter;
   float tExit;
 
-  start = cubeRotationInverse * rayStart;
+  start = rayStart - cubePosition;
+  start = cubeRotationInverse * start;
   direction = cubeRotationInverse * rayDirection;
 
   tNear = -1000000000.;

@@ -1,50 +1,57 @@
 import Vector from './Vector';
+import Quaternion from './Quaternion';
 
 export interface CubeParameters {
-  x: number;
-  y: number;
-  z: number;
+  minExtent: Vector;
+  maxExtent: Vector;
+  position?: Vector;
+  rotation?: Quaternion;
   diffuseColor: number[];
   phongExponent: number;
   specularColor: number[];
 }
 
 export default class Cube {
-  private thetaY: number;
+  private rotation: Quaternion;
 
   public minExtent: Vector;
   public maxExtent: Vector;
+  public position: Vector;
   public diffuseColor: number[];
   public phongExponent: number;
   public specularColor: number[];
 
   constructor({
-    x,
-    y,
-    z,
+    minExtent,
+    maxExtent,
+    position = new Vector(0, 0, 0),
+    rotation,
     diffuseColor,
     phongExponent,
     specularColor,
   }: CubeParameters) {
-    this.minExtent = new Vector(-(x / 2), 0, -(z / 2));
-    this.maxExtent = new Vector((x / 2), y, (z / 2));
-    this.thetaY = 0;
+    this.minExtent = minExtent;
+    this.maxExtent = maxExtent;
+    this.position = position;
+    this.rotation = rotation;
     this.diffuseColor = diffuseColor;
     this.phongExponent = phongExponent;
     this.specularColor = specularColor;
   }
 
-  public rotateY(theta: number): void {
-    this.thetaY = theta;
+  public rotateOnAxis(theta: number, axis: Vector): void {
+    let v: Vector;
+    v = Vector.scale(Math.sin(-theta / 2), Vector.normalize(axis));
+    // represents inverse of the rotation
+    this.rotation = new Quaternion(Math.cos(theta / 2), v.x, v.y, v.z);
   }
 
   public getInverseRotationMatrix(): number[] {
-    let sin: number;
-    let cos: number;
-    sin = Math.sin(-this.thetaY);
-    cos = Math.cos(this.thetaY);
-    return [cos, 0, -sin,
-              0, 1,    0,
-            sin, 0,  cos];
+    if (!this.rotation) {
+      return [1, 0, 0,
+              0, 1, 0,
+              0, 0, 1];
+    }
+    return this.rotation.getAsRotationMatrixElements();
   }
 }

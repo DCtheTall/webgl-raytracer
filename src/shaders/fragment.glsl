@@ -24,6 +24,9 @@ uniform vec3 u_SphereSpecularColors[MAXIMUM_NUMBER_OF_SPHERES];
 uniform vec3 u_CubeMinExtent;
 uniform vec3 u_CubeMaxExtent;
 uniform mat3 u_CubeRotationInverse;
+uniform vec3 u_CubePosition;
+uniform vec3 u_CubeDiffuseColor;
+uniform vec3 u_CubeSpecularColor;
 
 #pragma glslify: getPlaneDiffuseColor = require('./color/get-plane-diffuse-color');
 #pragma glslify: getPlaneSpecularColor = require('./color/get-plane-specular-color');
@@ -31,7 +34,7 @@ uniform mat3 u_CubeRotationInverse;
 #pragma glslify: intersectSphere = require('./geometry/intersect-sphere');
 #pragma glslify: intersectCube = require('./geometry/intersect-cube');
 #pragma glslify: getCubeNormal = require('./geometry/get-cube-normal');
-#pragma glslify: getNaturalColor = require('./color/get-natural-color', MAXIMUM_NUMBER_OF_LIGHTS=MAXIMUM_NUMBER_OF_LIGHTS, MAXIMUM_NUMBER_OF_SPHERES=MAXIMUM_NUMBER_OF_SPHERES, spherePositions=spherePositions, sphereRadii=sphereRadii, cubeRotationInverse=cubeRotationInverse);
+#pragma glslify: getNaturalColor = require('./color/get-natural-color', MAXIMUM_NUMBER_OF_LIGHTS=MAXIMUM_NUMBER_OF_LIGHTS, MAXIMUM_NUMBER_OF_SPHERES=MAXIMUM_NUMBER_OF_SPHERES, spherePositions=spherePositions, sphereRadii=sphereRadii, cubeRotationInverse=cubeRotationInverse, cubePosition=cubePosition);
 
 /*
  * Ray intersection test for the scene
@@ -74,7 +77,8 @@ vec3 intersectScene(vec3 rayStart, vec3 rayDirection) {
     rayDirection,
     u_CubeMinExtent,
     u_CubeMaxExtent,
-    u_CubeRotationInverse
+    u_CubeRotationInverse,
+    u_CubePosition
   );
   if ((dist > 0. && closestDistance == -1.)
       || (dist > 0. && dist < closestDistance)) {
@@ -85,11 +89,12 @@ vec3 intersectScene(vec3 rayStart, vec3 rayDirection) {
       rayDirection,
       u_CubeMinExtent,
       u_CubeMaxExtent,
-      u_CubeRotationInverse
+      u_CubeRotationInverse,
+      u_CubePosition
     );
-    diffuseColor = vec3(0., 0., 1.);
+    diffuseColor = u_CubeDiffuseColor;
     phongExponent = 50.;
-    specularColor = vec3(0.);
+    specularColor = u_CubeSpecularColor;
   }
 
   // Testing if the ray interests the ground plane
@@ -122,7 +127,8 @@ vec3 intersectScene(vec3 rayStart, vec3 rayDirection) {
       u_SphereRadii,
       u_CubeMinExtent,
       u_CubeMaxExtent,
-      u_CubeRotationInverse
+      u_CubeRotationInverse,
+      u_CubePosition
     );
   }
 
