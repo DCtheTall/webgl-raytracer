@@ -107,14 +107,14 @@ void testForShadow(
 
     // Test if the spheres block the light
     for (int i = 0; i < MAXIMUM_NUMBER_OF_SPHERES; i += 1) {
-      if (i > numberOfSpheres) break;
+      if (i == numberOfSpheres) break;
       dist = intersectSphere(rayStart, normalize(rayDirection + ds), spherePositions[i], sphereRadii[i]);
       if (dist > 0. && dist < distanceToLight) inShadow[j] = true;
     }
 
     // Test if the cube blocks the light
     for (int i = 0; i < MAXIMUM_NUMBER_OF_CUBES; i += 1) {
-      if (i > numberOfCubes) break;
+      if (i == numberOfCubes) break;
       dist = intersectCube(
         rayStart,
         normalize(rayDirection + ds),
@@ -123,7 +123,7 @@ void testForShadow(
         cubeRotationInverses[i],
         cubePositions[i]
       );
-      if (dist > 0. && dist < distanceToLight) inShadow[j] = true;
+      if (dist > 0.1 && dist < distanceToLight) inShadow[j] = true;
     }
   }
 }

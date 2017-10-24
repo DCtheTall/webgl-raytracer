@@ -23,7 +23,7 @@ export default class Raytracer {
     this.gl.clearColor(0, 0, 0, 1);
     this.windowPositionBuffer = this.gl.createBuffer();
     this.cameraViewDirectionBuffer = this.gl.createBuffer();
-    this.ambientLightColor = [.2, .2, .2];
+    this.ambientLightColor = [.3, .3, .3];
     this.camera = new Camera();
     this.lights = [];
     this.spheres = [];
@@ -140,6 +140,9 @@ export default class Raytracer {
 
     uniformLocation = this.gl.getUniformLocation(this.shaderProgram, `u_SphereSpecularColors[${i}]`);
     this.gl.uniform3fv(uniformLocation, sphere.specularColor);
+
+    uniformLocation = this.gl.getUniformLocation(this.shaderProgram, `u_SphereRefractiveIndexes[${i}]`);
+    this.gl.uniform1f(uniformLocation, sphere.refractiveIndex);
   }
 
   private sendCubeUniform(cube: Cube, i: number): void {
@@ -160,8 +163,14 @@ export default class Raytracer {
     uniformLocation = this.gl.getUniformLocation(this.shaderProgram, `u_CubeDiffuseColors[${i}]`);
     this.gl.uniform3fv(uniformLocation, cube.diffuseColor);
 
-    uniformLocation = this.gl.getUniformLocation(this.shaderProgram, 'u_CubeSpecularColor');
+    uniformLocation = this.gl.getUniformLocation(this.shaderProgram, `u_CubePhongExponents[${i}]`);
+    this.gl.uniform1f(uniformLocation, cube.phongExponent);
+
+    uniformLocation = this.gl.getUniformLocation(this.shaderProgram, `u_CubeSpecularColors[${i}]`);
     this.gl.uniform3fv(uniformLocation, cube.specularColor);
+
+    uniformLocation = this.gl.getUniformLocation(this.shaderProgram, `u_CubeRefractiveIndexes[${i}]`);
+    this.gl.uniform1f(uniformLocation, cube.refractiveIndex);
   }
 
   private sendUniforms(): void {

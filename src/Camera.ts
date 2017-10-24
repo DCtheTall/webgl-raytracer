@@ -9,7 +9,7 @@ export default class Camera {
 
   constructor() {
     this.eye = new Vector(0, 1.2, 2);
-    this.viewDirection = Vector.normalize(new Vector(0, 0, -1));
+    this.viewDirection = Vector.normalize(new Vector(0, -.2, -1));
     this.up = new Vector(0, 1, 0);
     this.fov = Math.PI / 4;
   }

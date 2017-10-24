@@ -9,6 +9,7 @@ export interface CubeParameters {
   diffuseColor: number[];
   phongExponent: number;
   specularColor: number[];
+  refractiveIndex?: number;
 }
 
 export default class Cube {
@@ -20,6 +21,7 @@ export default class Cube {
   public diffuseColor: number[];
   public phongExponent: number;
   public specularColor: number[];
+  public refractiveIndex: number;
 
   constructor({
     minExtent,
@@ -29,6 +31,7 @@ export default class Cube {
     diffuseColor,
     phongExponent,
     specularColor,
+    refractiveIndex = 1.25,
   }: CubeParameters) {
     this.minExtent = minExtent;
     this.maxExtent = maxExtent;
@@ -37,6 +40,7 @@ export default class Cube {
     this.diffuseColor = diffuseColor;
     this.phongExponent = phongExponent;
     this.specularColor = specularColor;
+    this.refractiveIndex = refractiveIndex;
   }
 
   public rotateOnAxis(theta: number, axis: Vector): void {

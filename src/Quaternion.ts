@@ -15,13 +15,6 @@ export default class Quaternion {
                           (q1.r * q2.k) + (q1.i * q2.j) - (q1.j * q2.i) + (q1.k * q2.r));
   }
 
-  static versor(q: Quaternion): Quaternion {
-    let mag: number;
-    mag = Quaternion.mag(q);
-    if (mag === 0) throw new Error('Cannot make a quaternion with magnitude zero a versor');
-    return new Quaternion((q.r / mag), (q.i / mag), (q.j / mag), (q.k / mag));
-  }
-
   public conjugate() {
     return new Quaternion(this.r, -this.i, -this.j, -this.k);
   }

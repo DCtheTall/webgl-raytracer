@@ -10,8 +10,8 @@ function main(): void {
 
   canvas = <HTMLCanvasElement>document.getElementById('webgl-canvas');
   sideLength = window.innerWidth > 550 ? 500 : 300;
-  canvas.width = sideLength;
-  canvas.height = sideLength - 100;
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
   raytracer = new RayTracer(canvas);
   raytracer.cubes.push(
     new Cube({
@@ -19,15 +19,15 @@ function main(): void {
       maxExtent: new Vector(0.3, 0.3, 0.3),
       diffuseColor: [1, 0.2, 0.2],
       phongExponent: 50,
-      specularColor: [1, 1, 1],
-      position: new Vector(0.5, 0.6, 0),
+      specularColor: [.1, .1, .1],
+      position: new Vector(0.5, 0.7, 0),
     }),
     new Cube({
       minExtent: new Vector(-0.2, -0.2, -0.2),
       maxExtent: new Vector(0.2, 0.2, 0.2),
       diffuseColor: [1, 1, 0.2],
       phongExponent: 50,
-      specularColor: [1, 1, 1],
+      specularColor: [.1, .1, .1],
       position: new Vector(-0.5, 0.5, 0),
     })
   );
@@ -37,7 +37,7 @@ function main(): void {
     new Sphere({
       radius: 0.2,
       diffuseColor: [1, 0.2, 0.2],
-      position: new Vector(0, 1.3, 0.5),
+      position: new Vector(0, 1.2, 0.5),
       phongExponent: 30,
       specularColor: [1, 1, 1],
     })
