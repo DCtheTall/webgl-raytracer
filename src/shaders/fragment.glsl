@@ -1,6 +1,7 @@
 precision mediump float;
 
-const int MAXIMUM_NUMBER_OF_SPHERES = 16;
+const int MAXIMUM_NUMBER_OF_SPHERES = 8;
+const int MAXIMUM_NUMBER_OF_CUBES = 8;
 const int MAXIMUM_NUMBER_OF_LIGHTS = 8;
 const float FLOOR_PHONG_EXPONENT = 50.;
 
@@ -21,12 +22,13 @@ uniform vec3 u_SphereDiffuseColors[MAXIMUM_NUMBER_OF_SPHERES];
 uniform float u_SpherePhongExponents[MAXIMUM_NUMBER_OF_SPHERES];
 uniform vec3 u_SphereSpecularColors[MAXIMUM_NUMBER_OF_SPHERES];
 
-uniform vec3 u_CubeMinExtent;
-uniform vec3 u_CubeMaxExtent;
-uniform mat3 u_CubeRotationInverse;
-uniform vec3 u_CubePosition;
-uniform vec3 u_CubeDiffuseColor;
-uniform vec3 u_CubeSpecularColor;
+uniform int u_NumberOfCubes;
+uniform vec3 u_CubeMinExtents[MAXIMUM_NUMBER_OF_CUBES];
+uniform vec3 u_CubeMaxExtents[MAXIMUM_NUMBER_OF_CUBES];
+uniform mat3 u_CubeRotationInverses[MAXIMUM_NUMBER_OF_CUBES];
+uniform vec3 u_CubePositions[MAXIMUM_NUMBER_OF_CUBES];
+uniform vec3 u_CubeDiffuseColors[MAXIMUM_NUMBER_OF_CUBES];
+uniform vec3 u_CubeSpecularColors[MAXIMUM_NUMBER_OF_CUBES];
 
 #pragma glslify: getPlaneDiffuseColor = require('./color/get-plane-diffuse-color');
 #pragma glslify: getPlaneSpecularColor = require('./color/get-plane-specular-color');
@@ -34,7 +36,7 @@ uniform vec3 u_CubeSpecularColor;
 #pragma glslify: intersectSphere = require('./geometry/intersect-sphere');
 #pragma glslify: intersectCube = require('./geometry/intersect-cube');
 #pragma glslify: getCubeNormal = require('./geometry/get-cube-normal');
-#pragma glslify: getNaturalColor = require('./color/get-natural-color', MAXIMUM_NUMBER_OF_LIGHTS=MAXIMUM_NUMBER_OF_LIGHTS, MAXIMUM_NUMBER_OF_SPHERES=MAXIMUM_NUMBER_OF_SPHERES, spherePositions=spherePositions, sphereRadii=sphereRadii, cubeRotationInverse=cubeRotationInverse, cubePosition=cubePosition);
+#pragma glslify: getNaturalColor = require('./color/get-natural-color', MAXIMUM_NUMBER_OF_LIGHTS=MAXIMUM_NUMBER_OF_LIGHTS, MAXIMUM_NUMBER_OF_SPHERES=MAXIMUM_NUMBER_OF_SPHERES, MAXIMUM_NUMBER_OF_CUBES=MAXIMUM_NUMBER_OF_CUBES, spherePositions=spherePositions, sphereRadii=sphereRadii, cubeRotationInverses=cubeRotationInverses, cubePositions=cubePositions);
 
 /*
  * Ray intersection test for the scene
@@ -71,30 +73,33 @@ vec3 intersectScene(vec3 rayStart, vec3 rayDirection) {
     }
   }
 
-  // Testing if the ray intersects the cube
-  dist = intersectCube(
-    rayStart,
-    rayDirection,
-    u_CubeMinExtent,
-    u_CubeMaxExtent,
-    u_CubeRotationInverse,
-    u_CubePosition
-  );
-  if ((dist > 0. && closestDistance == -1.)
-      || (dist > 0. && dist < closestDistance)) {
-    closestDistance = dist;
-    position = rayStart + (dist * rayDirection);
-    surfaceNormal = getCubeNormal(
+  // Testing if the ray intersects the cubes
+  for (int i = 0; i < MAXIMUM_NUMBER_OF_CUBES; i += 1) {
+    if (i > u_NumberOfCubes) break;
+    dist = intersectCube(
       rayStart,
       rayDirection,
-      u_CubeMinExtent,
-      u_CubeMaxExtent,
-      u_CubeRotationInverse,
-      u_CubePosition
+      u_CubeMinExtents[i],
+      u_CubeMaxExtents[i],
+      u_CubeRotationInverses[i],
+      u_CubePositions[i]
     );
-    diffuseColor = u_CubeDiffuseColor;
-    phongExponent = 50.;
-    specularColor = u_CubeSpecularColor;
+    if ((dist > 0. && closestDistance == -1.)
+        || (dist > 0. && dist < closestDistance)) {
+      closestDistance = dist;
+      position = rayStart + (dist * rayDirection);
+      surfaceNormal = getCubeNormal(
+        rayStart,
+        rayDirection,
+        u_CubeMinExtents[i],
+        u_CubeMaxExtents[i],
+        u_CubeRotationInverses[i],
+        u_CubePositions[i]
+      );
+      diffuseColor = u_CubeDiffuseColors[i];
+      phongExponent = 50.;
+      specularColor = u_CubeSpecularColors[i];
+    }
   }
 
   // Testing if the ray interests the ground plane
@@ -112,7 +117,6 @@ vec3 intersectScene(vec3 rayStart, vec3 rayDirection) {
   // Determine color of the fragment
   if (closestDistance > 0.) {
     color = getNaturalColor(
-      u_NumberOfLights,
       u_AmbientLightColor,
       diffuseColor,
       phongExponent,
@@ -120,15 +124,17 @@ vec3 intersectScene(vec3 rayStart, vec3 rayDirection) {
       surfaceNormal,
       rayDirection,
       position,
+      u_NumberOfLights,
       u_NumberOfSpheres,
+      u_NumberOfCubes,
       u_LightPositions,
       u_LightColors,
       u_SpherePositions,
       u_SphereRadii,
-      u_CubeMinExtent,
-      u_CubeMaxExtent,
-      u_CubeRotationInverse,
-      u_CubePosition
+      u_CubeMinExtents,
+      u_CubeMaxExtents,
+      u_CubeRotationInverses,
+      u_CubePositions
     );
   }
 

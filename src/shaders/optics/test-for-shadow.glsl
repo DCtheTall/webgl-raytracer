@@ -76,10 +76,11 @@ void testForShadow(
   int numberOfSpheres,
   in vec3 spherePositions[MAXIMUM_NUMBER_OF_SPHERES],
   in float sphereRadii[MAXIMUM_NUMBER_OF_SPHERES],
-  in vec3 cubeMinExtent,
-  in vec3 cubeMaxExtent,
-  in mat3 cubeRotationInverse,
-  in vec3 cubePosition,
+  int numberOfCubes,
+  in vec3 cubeMinExtents[MAXIMUM_NUMBER_OF_CUBES],
+  in vec3 cubeMaxExtents[MAXIMUM_NUMBER_OF_CUBES],
+  in mat3 cubeRotationInverses[MAXIMUM_NUMBER_OF_CUBES],
+  in vec3 cubePositions[MAXIMUM_NUMBER_OF_CUBES],
   inout bool inShadow[4]
 ) {
   vec3 rayDirection;
@@ -112,15 +113,18 @@ void testForShadow(
     }
 
     // Test if the cube blocks the light
-    dist = intersectCube(
-      rayStart,
-      normalize(rayDirection + ds),
-      cubeMinExtent,
-      cubeMaxExtent,
-      cubeRotationInverse,
-      cubePosition
-    );
-    if (dist > 0. && dist < distanceToLight) inShadow[j] = true;
+    for (int i = 0; i < MAXIMUM_NUMBER_OF_CUBES; i += 1) {
+      if (i > numberOfCubes) break;
+      dist = intersectCube(
+        rayStart,
+        normalize(rayDirection + ds),
+        cubeMinExtents[i],
+        cubeMaxExtents[i],
+        cubeRotationInverses[i],
+        cubePositions[i]
+      );
+      if (dist > 0. && dist < distanceToLight) inShadow[j] = true;
+    }
   }
 }
 

@@ -14,7 +14,7 @@ export default class Raytracer {
   public camera: Camera;
   public lights: Light[];
   public spheres: Sphere[];
-  public cube: Cube;
+  public cubes: Cube[];
 
   constructor(canvas: HTMLCanvasElement) {
     this.aspectRatio = canvas.width / canvas.height;
@@ -27,7 +27,7 @@ export default class Raytracer {
     this.camera = new Camera();
     this.lights = [];
     this.spheres = [];
-    this.cube = null;
+    this.cubes = [];
   }
 
   private compileShader(shaderSource: string, shaderType: number): WebGLShader {
@@ -111,15 +111,10 @@ export default class Raytracer {
       3,
       this.camera.getCameraViewDirections(this.aspectRatio)
     );
-    console.log(this.camera.getCameraViewDirections(this.aspectRatio));
   }
 
   private sendLightUniforms(light: Light, i: number): void {
     let uniformLocation: WebGLUniformLocation;
-
-    if (this.spheres.length > 8) throw new Error('Can only have up to 8 lights without modifying shader');
-    uniformLocation = this.gl.getUniformLocation(this.shaderProgram, `u_NumberOfLights`);
-    this.gl.uniform1i(uniformLocation, this.lights.length);
 
     uniformLocation = this.gl.getUniformLocation(this.shaderProgram, `u_LightPositions[${i}]`);
     this.gl.uniform3fv(uniformLocation, light.position.getElements());
@@ -130,10 +125,6 @@ export default class Raytracer {
 
   private sendSphereUniforms(sphere: Sphere, i: number): void {
     let uniformLocation: WebGLUniformLocation;
-
-    if (this.spheres.length > 16) throw new Error('Can only have up to 16 spheres without modifying shader');
-    uniformLocation = this.gl.getUniformLocation(this.shaderProgram, 'u_NumberOfSpheres');
-    this.gl.uniform1i(uniformLocation, this.spheres.length);
 
     uniformLocation = this.gl.getUniformLocation(this.shaderProgram, `u_SpherePositions[${i}]`);
     this.gl.uniform3fv(uniformLocation, sphere.position.getElements());
@@ -151,26 +142,26 @@ export default class Raytracer {
     this.gl.uniform3fv(uniformLocation, sphere.specularColor);
   }
 
-  private sendCubeUniforms(): void {
+  private sendCubeUniform(cube: Cube, i: number): void {
     let uniformLocation: WebGLUniformLocation;
 
-    uniformLocation = this.gl.getUniformLocation(this.shaderProgram, 'u_CubeMinExtent');
-    this.gl.uniform3fv(uniformLocation, this.cube.minExtent.getElements());
+    uniformLocation = this.gl.getUniformLocation(this.shaderProgram, `u_CubeMinExtents[${i}]`);
+    this.gl.uniform3fv(uniformLocation, cube.minExtent.getElements());
 
-    uniformLocation = this.gl.getUniformLocation(this.shaderProgram, 'u_CubeMaxExtent');
-    this.gl.uniform3fv(uniformLocation, this.cube.maxExtent.getElements());
+    uniformLocation = this.gl.getUniformLocation(this.shaderProgram, `u_CubeMaxExtents[${i}]`);
+    this.gl.uniform3fv(uniformLocation, cube.maxExtent.getElements());
 
-    uniformLocation = this.gl.getUniformLocation(this.shaderProgram, 'u_CubeRotationInverse');
-    this.gl.uniformMatrix3fv(uniformLocation, false, this.cube.getInverseRotationMatrix());
+    uniformLocation = this.gl.getUniformLocation(this.shaderProgram, `u_CubeRotationInverses[${i}]`);
+    this.gl.uniformMatrix3fv(uniformLocation, false, cube.getInverseRotationMatrix());
 
-    uniformLocation = this.gl.getUniformLocation(this.shaderProgram, 'u_CubePosition');
-    this.gl.uniform3fv(uniformLocation, this.cube.position.getElements());
+    uniformLocation = this.gl.getUniformLocation(this.shaderProgram, `u_CubePositions[${i}]`);
+    this.gl.uniform3fv(uniformLocation, cube.position.getElements());
 
-    uniformLocation = this.gl.getUniformLocation(this.shaderProgram, 'u_CubeDiffuseColor');
-    this.gl.uniform3fv(uniformLocation, this.cube.diffuseColor);
+    uniformLocation = this.gl.getUniformLocation(this.shaderProgram, `u_CubeDiffuseColors[${i}]`);
+    this.gl.uniform3fv(uniformLocation, cube.diffuseColor);
 
     uniformLocation = this.gl.getUniformLocation(this.shaderProgram, 'u_CubeSpecularColor');
-    this.gl.uniform3fv(uniformLocation, this.cube.specularColor);
+    this.gl.uniform3fv(uniformLocation, cube.specularColor);
   }
 
   private sendUniforms(): void {
@@ -182,9 +173,23 @@ export default class Raytracer {
     uniformLocation = this.gl.getUniformLocation(this.shaderProgram, 'u_AmbientLightColor');
     this.gl.uniform3fv(uniformLocation, this.ambientLightColor);
 
+    if (this.lights.length > 8) throw new Error('Can only have up to 8 lights without modifying the fragment shader');
+    uniformLocation = this.gl.getUniformLocation(this.shaderProgram, `u_NumberOfLights`);
+    this.gl.uniform1i(uniformLocation, this.lights.length);
+
     this.lights.forEach(this.sendLightUniforms.bind(this));
+
+    if (this.spheres.length > 8) throw new Error('You can only have up to 8 spheres without modifying the fragment shader');
+    uniformLocation = this.gl.getUniformLocation(this.shaderProgram, 'u_NumberOfSpheres');
+    this.gl.uniform1i(uniformLocation, this.spheres.length);
+
     this.spheres.forEach(this.sendSphereUniforms.bind(this));
-    this.sendCubeUniforms();
+
+    if (this.cubes.length > 8) throw new Error('You can only have up to 8 cubes without modifiying the fragment shader');
+    uniformLocation = this.gl.getUniformLocation(this.shaderProgram, 'u_NumberOfCubes');
+    this.gl.uniform1i(uniformLocation, this.cubes.length);
+
+    this.cubes.forEach(this.sendCubeUniform.bind(this));
   }
 
   public render(): void {

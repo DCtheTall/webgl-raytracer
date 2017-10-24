@@ -29,10 +29,10 @@ export default class Quaternion {
   public getAsRotationMatrixElements(): number[] {
     let q: Quaternion;
     let s: number;
-    q = Quaternion.versor(this);
-    s = 2 * (Quaternion.mag(this) ** -2);
+    q = this;
+    s = 2 / (Quaternion.mag(this) ** 2);
     return [
-      1 - (s * ((q.j ** 2) + q.k ** 2)),
+      1 - (s * ((q.j ** 2) + (q.k ** 2))),
       s * ((q.i * q.j) + (q.k * q.r)),
       s * ((q.i * q.k) - (q.j * q.r)), // first column
       s * ((q.i * q.j) - (q.k * q.r)),

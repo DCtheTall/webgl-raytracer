@@ -1,3 +1,5 @@
+#pragma glslify: transpose = require('glsl-transpose');
+
 /**
  * Gets the normal vector on the cube where the ray intersects the cube
  */
@@ -17,6 +19,7 @@ vec3 getCubeNormal(
   vec3 tMax;
   float tEnter;
   float tExit;
+  vec3 result;
 
   start = rayStart - cubePosition;
   start = cubeRotationInverse * start;
@@ -42,11 +45,13 @@ vec3 getCubeNormal(
   if (tEnter > tNear) tNear = tEnter;
   if (tExit < tFar) tFar = tExit;
 
-  if (tNear == min(tMin.x, tMax.x) && tNear > 0.) return vec3(1., 0., 0.);
-  if (tNear == min(tMin.x, tMax.x)) return vec3(-1., 0., 0.);
-  if (tNear == min(tMin.y, tMax.y)) return vec3(0, 1., 0.);
-  if (tNear == min(tMin.z, tMax.z) && tNear > 0.) return vec3(0., 0., 1.);
-  return vec3(0., 0., -1.);
+  if (tNear == min(tMin.x, tMax.x) && tNear > 0.) result = vec3(1., 0., 0.);
+  else if (tNear == min(tMin.x, tMax.x)) result = vec3(-1., 0., 0.);
+  else if (tNear == min(tMin.y, tMax.y)) result = vec3(0, 1., 0.);
+  else if (tNear == min(tMin.z, tMax.z) && tNear > 0.) result = vec3(0., 0., 1.);
+  else result = vec3(0., 0., -1.);
+
+  return transpose(cubeRotationInverse) * result;
 }
 
 #pragma glslify: export(getCubeNormal);

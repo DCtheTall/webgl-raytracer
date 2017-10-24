@@ -42,8 +42,7 @@ export default class Cube {
   public rotateOnAxis(theta: number, axis: Vector): void {
     let v: Vector;
     v = Vector.scale(Math.sin(-theta / 2), Vector.normalize(axis));
-    // represents inverse of the rotation
-    this.rotation = new Quaternion(Math.cos(theta / 2), v.x, v.y, v.z);
+    this.rotation = new Quaternion(Math.cos(theta / 2), v.x, v.y, v.z); // represents inverse of the rotation
   }
 
   public getInverseRotationMatrix(): number[] {
