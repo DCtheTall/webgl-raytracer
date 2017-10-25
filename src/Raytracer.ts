@@ -2,6 +2,7 @@ import Camera from './Camera';
 import Light from './Light';
 import Sphere from './Sphere';
 import Cube from './Cube';
+import Vector from './Vector';
 
 export default class Raytracer {
   private aspectRatio: number;
@@ -24,7 +25,7 @@ export default class Raytracer {
     this.windowPositionBuffer = this.gl.createBuffer();
     this.cameraViewDirectionBuffer = this.gl.createBuffer();
     this.ambientLightColor = [.3, .3, .3];
-    this.camera = new Camera();
+    this.camera = new Camera(new Vector(0, 2, 15), new Vector(0, 5, 0));
     this.lights = [];
     this.spheres = [];
     this.cubes = [];
@@ -96,13 +97,6 @@ export default class Raytracer {
       attribLocation,
       2,
       windowCorners
-    );
-    attribLocation = this.gl.getAttribLocation(this.shaderProgram, 'a_CameraViewPosition');
-    this.sendVecAttribute(
-      this.cameraViewDirectionBuffer,
-      attribLocation,
-      3,
-      this.camera.getCameraViewPositions(this.aspectRatio)
     );
     attribLocation = this.gl.getAttribLocation(this.shaderProgram, 'a_CameraViewDirection');
     this.sendVecAttribute(

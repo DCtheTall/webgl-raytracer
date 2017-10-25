@@ -45,11 +45,12 @@ vec3 getCubeNormal(
   if (tEnter > tNear) tNear = tEnter;
   if (tExit < tFar) tFar = tExit;
 
-  if (tNear == min(tMin.x, tMax.x) && tNear > 0.) result = vec3(1., 0., 0.);
-  else if (tNear == min(tMin.x, tMax.x)) result = vec3(-1., 0., 0.);
-  else if (tNear == min(tMin.y, tMax.y)) result = vec3(0, 1., 0.);
-  else if (tNear == min(tMin.z, tMax.z) && tNear > 0.) result = vec3(0., 0., 1.);
-  else result = vec3(0., 0., -1.);
+  if (tNear == tMin.x) result = vec3(-1., 0., 0.);
+  else if (tNear == tMax.x) result = vec3(1., 0., 0.);
+  else if (tNear == tMin.y) result = vec3(0., -1., 0.);
+  else if (tNear == tMax.y) result = vec3(0., 1., 0.);
+  else if (tNear == tMin.z) result = vec3(0., 0., -1.);
+  else result = vec3(0., 0., 1.);
 
   return transpose(cubeRotationInverse) * result;
 }

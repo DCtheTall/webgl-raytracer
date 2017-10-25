@@ -2,5 +2,7 @@ body {
   background: #333;
   color: #dfdfdf;
   font-family: Helvetica;
+  padding: 0;
+  margin: 0;
   text-align: center;
 }

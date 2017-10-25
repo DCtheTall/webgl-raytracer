@@ -35,8 +35,6 @@ uniform float u_CubePhongExponents[MAXIMUM_NUMBER_OF_CUBES];
 uniform vec3 u_CubeSpecularColors[MAXIMUM_NUMBER_OF_CUBES];
 uniform float u_CubeRefractiveIndexes[MAXIMUM_NUMBER_OF_CUBES];
 
-#pragma glslify: getPlaneDiffuseColor = require('./color/get-plane-diffuse-color');
-#pragma glslify: getPlaneSpecularColor = require('./color/get-plane-specular-color');
 #pragma glslify: intersectPlane = require('./geometry/intersect-plane');
 #pragma glslify: intersectSphere = require('./geometry/intersect-sphere');
 #pragma glslify: intersectCube = require('./geometry/intersect-cube');
@@ -124,11 +122,9 @@ vec3 getReflectedColor(
   float reflectance
 ) {
   vec3 color;
-  float currentReflectance;
   vec3 reflectedRayDirection;
 
   color = vec3(0.);
-  currentReflectance = reflectance;
 
   for (int i = 0; i < MAXIMUM_REFLECTION_DEPTH; i += 1) {
     float closestDistance;
@@ -140,7 +136,7 @@ vec3 getReflectedColor(
     vec3 specularColor;
     float refractiveIndex;
 
-    reflectedRayDirection = reflect(rayDirection, reflectionSurfaceNormal);
+    reflectedRayDirection = normalize(reflect(rayDirection, reflectionSurfaceNormal));
     closestDistance = -1.;
 
     for (int j = 0; j < MAXIMUM_NUMBER_OF_SPHERES; j += 1) {
@@ -195,10 +191,16 @@ vec3 getReflectedColor(
       closestDistance = dist;
       position = reflectionPosition + (dist * reflectedRayDirection);
       surfaceNormal = vec3(0., 1., 0.);
-      diffuseColor = getPlaneDiffuseColor(position);
+      if (mod(floor(position.x / 5.) + floor(position.z / 5.), 2.) != 0.) {
+        diffuseColor = vec3(0.9);
+        specularColor = vec3(1.);
+        refractiveIndex = 1.05;
+      } else {
+        diffuseColor = vec3(0.2, 0.2, 0.4);
+        specularColor = vec3(0.4);
+        refractiveIndex = 1.2;
+      }
       phongExponent = FLOOR_PHONG_EXPONENT;
-      specularColor = getPlaneSpecularColor(position);
-      refractiveIndex = FLOOR_REFRACTIVE_INDEX;
     }
 
     if (dist > 0.) {
@@ -210,12 +212,12 @@ vec3 getReflectedColor(
         -reflectedRayDirection,
         position
       );
-      currentReflectance *= determineReflectance(
+      reflectance *= determineReflectance(
         surfaceNormal,
         reflectedRayDirection,
         refractiveIndex
       );
-      color += pow(currentReflectance, float(i + 1)) * c;
+      color += pow(reflectance, float(i + 1)) * c;
 
       reflectionPosition = position;
       reflectionSurfaceNormal = surfaceNormal;
@@ -304,10 +306,16 @@ vec3 intersectScene(vec3 rayStart, vec3 rayDirection) {
     closestDistance = dist;
     position = rayStart + (dist * rayDirection);
     surfaceNormal = vec3(0., 1., 0.);
-    diffuseColor = getPlaneDiffuseColor(position);
+    if (mod(floor(position.x / 5.) + floor(position.z / 5.), 2.) != 0.) {
+      diffuseColor = vec3(0.9);
+      specularColor = vec3(1.);
+      refractiveIndex = 1.05;
+    } else {
+      diffuseColor = vec3(0.2, 0.2, 0.4);
+      specularColor = vec3(0.4);
+      refractiveIndex = 1.2;
+    }
     phongExponent = FLOOR_PHONG_EXPONENT;
-    specularColor = getPlaneSpecularColor(position);
-    refractiveIndex = FLOOR_REFRACTIVE_INDEX;
   }
 
   // Determine color of the fragment
@@ -320,17 +328,17 @@ vec3 intersectScene(vec3 rayStart, vec3 rayDirection) {
       -rayDirection,
       position
     );
-    reflectance = determineReflectance(
-      surfaceNormal,
-      rayDirection,
-      refractiveIndex
-    );
-    color += getReflectedColor(
-      position,
-      surfaceNormal,
-      rayDirection,
-      reflectance
-    );
+    // reflectance = determineReflectance(
+    //   surfaceNormal,
+    //   rayDirection,
+    //   refractiveIndex
+    // );
+    // color += getReflectedColor(
+    //   position,
+    //   surfaceNormal,
+    //   rayDirection,
+    //   reflectance
+    // );
   }
 
   return color;
@@ -341,6 +349,6 @@ vec3 intersectScene(vec3 rayStart, vec3 rayDirection) {
  */
 void main() {
   vec3 fragColor;
-  fragColor = intersectScene(u_CameraPosition + v_CameraViewPosition, normalize(v_CameraViewDirection));
+  fragColor = intersectScene(u_CameraPosition, normalize(v_CameraViewDirection));
   gl_FragColor = vec4(fragColor, 1.);
 }

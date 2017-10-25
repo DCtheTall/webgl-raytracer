@@ -15,9 +15,9 @@ float determineReflectance(vec3 surfaceNormal, vec3 rayDirection, float refracti
   cosine_t = cos(theta_t);
 
   /* Finding reflectance with Fresnel's equations */
-  reflectance = cosine_i - refractiveIndex * cosine_t;
-  reflectance /= cosine_i + refractiveIndex * cosine_t;
-  reflectance = pow(reflectance, 2.);
+  reflectance = cosine_i - (refractiveIndex * cosine_t);
+  reflectance /= cosine_i + (refractiveIndex * cosine_t);
+  reflectance = pow(abs(reflectance), 2.);
 
   return clamp(reflectance, 0., 1.);
 }

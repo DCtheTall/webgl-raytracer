@@ -21,19 +21,17 @@ export default class Quaternion {
 
   public getAsRotationMatrixElements(): number[] {
     let q: Quaternion;
-    let s: number;
     q = this;
-    s = 2 / (Quaternion.mag(this) ** 2);
     return [
-      1 - (s * ((q.j ** 2) + (q.k ** 2))),
-      s * ((q.i * q.j) + (q.k * q.r)),
-      s * ((q.i * q.k) - (q.j * q.r)), // first column
-      s * ((q.i * q.j) - (q.k * q.r)),
-      1 - (s * ((q.i ** 2) + (q.k ** 2))),
-      s * ((q.j * q.k) + (q.i * q.r)), // second column
-      s * ((q.i * q.k) + (q.j * q.r)),
-      s * ((q.j * q.k) - (q.i * q.r)),
-      1 - (s * ((q.i ** 2) + (q.j ** 2))), // third column
+      1 - (2 * ((q.j ** 2) + (q.k ** 2))),
+      2 * ((q.i * q.j) + (q.k * q.r)),
+      2 * ((q.i * q.k) - (q.j * q.r)), // first column
+      2 * ((q.i * q.j) - (q.k * q.r)),
+      1 - (2 * ((q.i ** 2) + (q.k ** 2))),
+      2 * ((q.j * q.k) + (q.i * q.r)), // second column
+      2 * ((q.i * q.k) + (q.j * q.r)),
+      2 * ((q.j * q.k) - (q.i * q.r)),
+      1 - (2 * ((q.i ** 2) + (q.j ** 2))), // third column
     ];
   }
 }

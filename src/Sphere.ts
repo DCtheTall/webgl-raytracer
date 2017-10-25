@@ -23,12 +23,13 @@ export default class Sphere {
     diffuseColor,
     phongExponent,
     specularColor,
-    refractiveIndex = 1.3,
+    refractiveIndex = 1.4,
   }: SphereParameters) {
     this.radius = radius;
     this.position = position;
     this.diffuseColor = diffuseColor;
     this.phongExponent = phongExponent;
     this.specularColor = specularColor;
+    this.refractiveIndex = refractiveIndex;
   }
 }

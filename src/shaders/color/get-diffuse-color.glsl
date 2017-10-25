@@ -10,9 +10,11 @@ vec3 getDiffuseColor(
   vec3 diffuseColor
 ) {
   vec3 incidentLightDirection;
+  float dist;
   float lambertian;
   incidentLightDirection = normalize(position - lightPosition);
-  lambertian = clamp(-dot(incidentLightDirection, surfaceNormal), 0., 1.);
+  dist = length(position - lightPosition);
+  lambertian = clamp(-dot(incidentLightDirection, surfaceNormal), 0., 1.) / dist;
   return lambertian * lightColor * diffuseColor;
 }
 

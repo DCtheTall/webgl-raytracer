@@ -31,7 +31,7 @@ export default class Cube {
     diffuseColor,
     phongExponent,
     specularColor,
-    refractiveIndex = 1.25,
+    refractiveIndex = 1.4,
   }: CubeParameters) {
     this.minExtent = minExtent;
     this.maxExtent = maxExtent;
