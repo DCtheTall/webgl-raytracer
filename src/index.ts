@@ -45,12 +45,14 @@ function main(): void {
   );
   raytracer.lights.push(
     {
-      position: new Vector(-10, 40, 5),
+      position: new Vector(-10, 40, 15),
       color: [1, 1, 1],
+      intensity: 500,
     },
     {
-      position: new Vector(20, 40, 5),
+      position: new Vector(20, 40, 15),
       color: [1, 1, 1],
+      intensity: 500,
     }
   );
   raytracer.render();

@@ -4,6 +4,7 @@
 vec3 getSpecularColor(
   vec3 lightPosition,
   vec3 lightColor,
+  float lightIntensity,
   vec3 viewingDirection,
   vec3 position,
   vec3 surfaceNormal,
@@ -20,7 +21,7 @@ vec3 getSpecularColor(
   halfwayVector = normalize(incidentLightDirection + viewingDirection);
   reflectedLightDirection = reflect(incidentLightDirection, surfaceNormal);
   specular = pow(clamp(-dot(halfwayVector, reflectedLightDirection), 0.01, 1.), phongExponent) / pow(dist, 2.);
-  return specular * specularColor * lightColor;
+  return  clamp(lightIntensity * specular, 0., 1.) * specularColor * lightColor;
 }
 
 #pragma glslify: export(getSpecularColor);

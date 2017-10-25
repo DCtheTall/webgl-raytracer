@@ -25,7 +25,7 @@ export default class Raytracer {
     this.windowPositionBuffer = this.gl.createBuffer();
     this.cameraViewDirectionBuffer = this.gl.createBuffer();
     this.ambientLightColor = [.3, .3, .3];
-    this.camera = new Camera(new Vector(0, 2, 15), new Vector(0, 5, 0));
+    this.camera = new Camera(new Vector(-1, 2, 15), new Vector(0, 5, 0));
     this.lights = [];
     this.spheres = [];
     this.cubes = [];
@@ -115,6 +115,9 @@ export default class Raytracer {
 
     uniformLocation = this.gl.getUniformLocation(this.shaderProgram, `u_LightColors[${i}]`);
     this.gl.uniform3fv(uniformLocation, light.color);
+
+    uniformLocation = this.gl.getUniformLocation(this.shaderProgram, `u_LightIntensities[${i}]`);
+    this.gl.uniform1f(uniformLocation, light.intensity);
   }
 
   private sendSphereUniforms(sphere: Sphere, i: number): void {

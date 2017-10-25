@@ -16,6 +16,7 @@ uniform vec3 u_AmbientLightColor;
 uniform int u_NumberOfLights;
 uniform vec3 u_LightPositions[MAXIMUM_NUMBER_OF_LIGHTS];
 uniform vec3 u_LightColors[MAXIMUM_NUMBER_OF_LIGHTS];
+uniform float u_LightIntensities[MAXIMUM_NUMBER_OF_LIGHTS];
 
 uniform int u_NumberOfSpheres;
 uniform vec3 u_SpherePositions[MAXIMUM_NUMBER_OF_SPHERES];
@@ -95,6 +96,7 @@ vec3 getNaturalColor(
     color += lambertianMax * getDiffuseColor(
       u_LightPositions[i],
       u_LightColors[i],
+      u_LightIntensities[i],
       position,
       surfaceNormal,
       diffuseColor
@@ -102,6 +104,7 @@ vec3 getNaturalColor(
     color += specularMax * getSpecularColor(
       u_LightPositions[i],
       u_LightColors[i],
+      u_LightIntensities[i],
       rayDirection,
       position,
       surfaceNormal,
