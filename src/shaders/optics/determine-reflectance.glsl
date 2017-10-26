@@ -9,8 +9,8 @@ float determineReflectance(vec3 surfaceNormal, vec3 rayDirection, float refracti
   float reflectance;
 
   /* Snell's law to find the angle the transmitted ray makes with the normal */
-  cosine_i = dot(normalize(surfaceNormal), normalize(-rayDirection));
-  sine_i = length(cross(normalize(surfaceNormal), normalize(-rayDirection)));
+  cosine_i = dot(normalize(surfaceNormal), normalize(rayDirection));
+  sine_i = length(cross(normalize(surfaceNormal), normalize(rayDirection)));
   theta_t = asin(sine_i / refractiveIndex);
   cosine_t = cos(theta_t);
 

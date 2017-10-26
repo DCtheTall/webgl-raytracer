@@ -207,7 +207,8 @@ vec3 getReflectedColor(
     }
 
     if (dist > 0.) {
-      vec3 c = getNaturalColor(
+      vec3 surfaceColor;
+      surfaceColor = getNaturalColor(
         diffuseColor,
         phongExponent,
         specularColor,
@@ -220,7 +221,7 @@ vec3 getReflectedColor(
         reflectedRayDirection,
         refractiveIndex
       );
-      color += pow(reflectance, float(i + 1)) * c;
+      color += pow(reflectance, float(i + 1)) * surfaceColor;
 
       reflectionPosition = position;
       reflectionSurfaceNormal = surfaceNormal;
@@ -331,17 +332,17 @@ vec3 intersectScene(vec3 rayStart, vec3 rayDirection) {
       -rayDirection,
       position
     );
-    // reflectance = determineReflectance(
-    //   surfaceNormal,
-    //   rayDirection,
-    //   refractiveIndex
-    // );
-    // color += getReflectedColor(
-    //   position,
-    //   surfaceNormal,
-    //   rayDirection,
-    //   reflectance
-    // );
+    reflectance = determineReflectance(
+      surfaceNormal,
+      rayDirection,
+      refractiveIndex
+    );
+    color += getReflectedColor(
+      position,
+      surfaceNormal,
+      rayDirection,
+      reflectance
+    );
   }
 
   return color;

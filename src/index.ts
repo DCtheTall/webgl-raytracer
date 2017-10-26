@@ -2,6 +2,7 @@ import RayTracer from './Raytracer';
 import Sphere from './Sphere';
 import Vector from './Vector';
 import Cube from './Cube';
+import Camera from './Camera';
 
 function main(): void {
   let canvas: HTMLCanvasElement;
@@ -13,6 +14,7 @@ function main(): void {
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
   raytracer = new RayTracer(canvas);
+  raytracer.camera = new Camera(new Vector(-1, 10, 15), new Vector(0, 2, 0));
   raytracer.cubes.push(
     new Cube({
       minExtent: new Vector(-3, -3, -3),
@@ -47,7 +49,7 @@ function main(): void {
     {
       position: new Vector(-10, 40, 15),
       color: [1, 1, 1],
-      intensity: 500,
+      intensity: 700,
     },
     {
       position: new Vector(20, 40, 15),
