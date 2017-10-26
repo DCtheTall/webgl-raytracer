@@ -8,6 +8,7 @@ export interface SphereParameters {
   specularColor: number[];
   refractiveIndex?: number;
   reflectivity?: number;
+  opacity?: number;
 }
 
 export default class Sphere {
@@ -18,6 +19,7 @@ export default class Sphere {
   public specularColor: number[];
   public refractiveIndex: number;
   public reflectivity: number;
+  public opacity: number;
 
   constructor({
     radius,
@@ -27,6 +29,7 @@ export default class Sphere {
     specularColor,
     refractiveIndex = 1.4,
     reflectivity = 0.5,
+    opacity = 1,
   }: SphereParameters) {
     this.radius = radius;
     this.position = position;
@@ -35,5 +38,6 @@ export default class Sphere {
     this.specularColor = specularColor;
     this.refractiveIndex = refractiveIndex;
     this.reflectivity = reflectivity;
+    this.opacity = opacity;
   }
 }

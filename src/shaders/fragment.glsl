@@ -1,5 +1,11 @@
 precision mediump float;
 
+/******************************************************************************
+
+Constants, Attributes, Uniforms
+
+*******************************************************************************/
+
 const int MAXIMUM_NUMBER_OF_SPHERES = 8;
 const int MAXIMUM_NUMBER_OF_CUBES = 8;
 const int MAXIMUM_NUMBER_OF_LIGHTS = 8;
@@ -26,6 +32,7 @@ uniform float u_SpherePhongExponents[MAXIMUM_NUMBER_OF_SPHERES];
 uniform vec3 u_SphereSpecularColors[MAXIMUM_NUMBER_OF_SPHERES];
 uniform float u_SphereRefractiveIndexes[MAXIMUM_NUMBER_OF_SPHERES];
 uniform float u_SphereReflectivities[MAXIMUM_NUMBER_OF_SPHERES];
+uniform float u_SphereOpacities[MAXIMUM_NUMBER_OF_SPHERES];
 
 uniform int u_NumberOfCubes;
 uniform vec3 u_CubeMinExtents[MAXIMUM_NUMBER_OF_CUBES];
@@ -38,6 +45,12 @@ uniform vec3 u_CubeSpecularColors[MAXIMUM_NUMBER_OF_CUBES];
 uniform float u_CubeRefractiveIndexes[MAXIMUM_NUMBER_OF_CUBES];
 uniform float u_CubeReflectivities[MAXIMUM_NUMBER_OF_CUBES];
 
+/******************************************************************************
+
+Modules
+
+*******************************************************************************/
+
 #pragma glslify: intersectPlane = require('./geometry/intersect-plane');
 #pragma glslify: intersectSphere = require('./geometry/intersect-sphere');
 #pragma glslify: intersectCube = require('./geometry/intersect-cube');
@@ -46,6 +59,13 @@ uniform float u_CubeReflectivities[MAXIMUM_NUMBER_OF_CUBES];
 #pragma glslify: getSpecularColor = require('./color/get-specular-color');
 #pragma glslify: testForShadow = require('./optics/test-for-shadow', MAXIMUM_NUMBER_OF_SPHERES=MAXIMUM_NUMBER_OF_SPHERES, MAXIMUM_NUMBER_OF_CUBES=MAXIMUM_NUMBER_OF_CUBES, spherePositions=spherePositions, sphereRadii=sphereRadii, cubeMinExtents=cubeMinExtents, cubeMaxExtents=cubeMaxExtents, cubeRotationInverses=cubeRotationInverses, cubePositions=cubePositions);
 #pragma glslify: determineReflectance = require('./optics/determine-reflectance');
+#pragma glslify: transmitRay = require('./optics/transmit-ray');
+
+/******************************************************************************
+
+Get Natural Color
+
+*******************************************************************************/
 
 /**
  * Get natural color of the surface
@@ -117,6 +137,132 @@ vec3 getNaturalColor(
   return color;
 }
 
+/******************************************************************************
+
+Get Refracted Color
+
+*******************************************************************************/
+
+/**
+ * Get the refraction color of non-opaque objects
+ */
+vec3 getRefractedColor(
+  vec3 refractionStart,
+  vec3 incidentRayDirection,
+  vec3 opticalAxis,
+  float refractiveIndex,
+  float radius
+) {
+  vec3 color;
+  vec3 refractedRayStart;
+  vec3 refractedRayDirection;
+  float closestDistance;
+  float dist;
+  vec3 position;
+  vec3 surfaceNormal;
+  vec3 diffuseColor;
+  vec3 specularColor;
+  float phongExponent;
+
+  color = vec3(0.);
+  transmitRay(
+    refractionStart,
+    incidentRayDirection,
+    opticalAxis,
+    refractiveIndex,
+    radius,
+    refractedRayStart,
+    refractedRayDirection
+  );
+  closestDistance = -1.;
+
+  dist = intersectPlane(refractedRayStart, refractedRayDirection);
+  if (dist > 0.) {
+    closestDistance = dist;
+    position = dist * refractedRayStart + refractedRayDirection;
+    surfaceNormal = vec3(0., 1., 0.);
+    if (mod(floor(position.x / 5.) + floor(position.z / 5.), 2.) != 0.) {
+      diffuseColor = vec3(0.9);
+      specularColor = vec3(1.);
+    } else {
+      diffuseColor = vec3(0.2, 0.2, 0.4);
+      specularColor = vec3(0.4);
+    }
+    phongExponent = FLOOR_PHONG_EXPONENT;
+  }
+
+  for (int i = 0; i < MAXIMUM_NUMBER_OF_SPHERES; i += 1) {
+    if (i == u_NumberOfSpheres) break;
+
+    dist = intersectSphere(
+      refractedRayStart,
+      refractedRayDirection,
+      u_SpherePositions[i],
+      u_SphereRadii[i]
+    );
+
+    if ((dist > 0. && closestDistance == .1)
+        || (dist > 0. && dist < closestDistance)) {
+      closestDistance = dist;
+      position = dist * refractedRayStart + refractedRayDirection;
+
+      surfaceNormal = normalize(position - u_SpherePositions[i]);
+      diffuseColor = u_SphereDiffuseColors[i];
+      phongExponent = u_SpherePhongExponents[i];
+      specularColor = u_SphereSpecularColors[i];
+    }
+  }
+
+  for (int i = 0; i < MAXIMUM_NUMBER_OF_CUBES; i += 1) {
+    if (i == u_NumberOfCubes) break;
+
+    dist = intersectCube(
+      refractedRayStart,
+      refractedRayDirection,
+      u_CubeMinExtents[i],
+      u_CubeMaxExtents[i],
+      u_CubeRotationInverses[i],
+      u_CubePositions[i]
+    );
+
+    if ((dist > 0. && closestDistance == .1)
+        || (dist > 0. && dist < closestDistance)) {
+      closestDistance = dist;
+      position = dist * refractedRayStart + refractedRayDirection;
+      surfaceNormal = getCubeNormal(
+        refractedRayStart,
+        refractedRayDirection,
+        u_CubeMinExtents[i],
+        u_CubeMaxExtents[i],
+        u_CubeRotationInverses[i],
+        u_CubePositions[i]
+      );
+      diffuseColor = u_CubeDiffuseColors[i];
+      phongExponent = u_CubePhongExponents[i];
+      specularColor = u_CubeSpecularColors[i];
+    }
+  }
+
+  if (closestDistance > 0.) {
+    color = getNaturalColor(
+      diffuseColor,
+      phongExponent,
+      specularColor,
+      surfaceNormal,
+      -refractedRayDirection,
+      position
+    );
+  }
+
+  return color;
+}
+
+/******************************************************************************
+
+Get Reflected Color
+
+*******************************************************************************/
+
 /**
  * Get the reflected color of the surface
  */
@@ -133,6 +279,7 @@ vec3 getReflectedColor(
 
   for (int i = 0; i < MAXIMUM_REFLECTION_DEPTH; i += 1) {
     float closestDistance;
+    float opacity;
     float dist;
     vec3 position;
     vec3 surfaceNormal;
@@ -141,9 +288,11 @@ vec3 getReflectedColor(
     vec3 specularColor;
     float refractiveIndex;
     float reflectivity;
+    float radius;
 
     reflectedRayDirection = normalize(reflect(rayDirection, reflectionSurfaceNormal));
     closestDistance = -1.;
+    opacity = 1.;
 
     for (int j = 0; j < MAXIMUM_NUMBER_OF_SPHERES; j += 1) {
       if (j == u_NumberOfSpheres) break;
@@ -165,6 +314,8 @@ vec3 getReflectedColor(
         specularColor = u_SphereSpecularColors[j];
         refractiveIndex = u_SphereRefractiveIndexes[j];
         reflectivity = u_SphereReflectivities[j];
+        opacity = u_SphereOpacities[j];
+        radius = u_SphereRadii[i];
       }
     }
 
@@ -184,7 +335,14 @@ vec3 getReflectedColor(
           || (dist > 0. && dist < closestDistance)) {
         closestDistance = dist;
         position = reflectionPosition + (dist * reflectedRayDirection);
-        surfaceNormal = normalize(position - u_CubePositions[j]);
+        surfaceNormal = getCubeNormal(
+          reflectionPosition,
+          reflectedRayDirection,
+          u_CubeMinExtents[j],
+          u_CubeMaxExtents[j],
+          u_CubeRotationInverses[j],
+          u_CubePositions[j]
+        );
         diffuseColor = u_CubeDiffuseColors[j];
         phongExponent = u_CubePhongExponents[j];
         specularColor = u_CubeSpecularColors[j];
@@ -222,6 +380,16 @@ vec3 getReflectedColor(
         -reflectedRayDirection,
         position
       );
+      if (opacity != 1.) {
+        surfaceColor *= opacity;
+        surfaceColor += (1. - opacity) * getRefractedColor(
+          position,
+          reflectedRayDirection,
+          surfaceNormal,
+          refractiveIndex,
+          radius
+        );
+      }
       reflectance *= reflectivity * determineReflectance(
         surfaceNormal,
         reflectedRayDirection,
@@ -238,12 +406,20 @@ vec3 getReflectedColor(
   return color;
 }
 
+/******************************************************************************
+
+Ray Intersection Test
+
+*******************************************************************************/
+
 /*
  * Ray intersection test for the scene
  */
 vec3 intersectScene(vec3 rayStart, vec3 rayDirection) {
   vec3 color;
   float closestDistance;
+  float opacity;
+  float radius;
   float dist;
   vec3 position;
   vec3 surfaceNormal;
@@ -256,6 +432,7 @@ vec3 intersectScene(vec3 rayStart, vec3 rayDirection) {
 
   color = vec3(0.);
   closestDistance = -1.;
+  opacity = 1.;
 
   // Testing if the ray interests the ground plane
   dist = intersectPlane(rayStart, rayDirection);
@@ -296,6 +473,8 @@ vec3 intersectScene(vec3 rayStart, vec3 rayDirection) {
       specularColor = u_SphereSpecularColors[i];
       refractiveIndex = u_SphereRefractiveIndexes[i];
       reflectivity = u_SphereReflectivities[i];
+      opacity = u_SphereOpacities[i];
+      radius = u_SphereRadii[i];
     }
   }
 
@@ -340,6 +519,16 @@ vec3 intersectScene(vec3 rayStart, vec3 rayDirection) {
       -rayDirection,
       position
     );
+    if (opacity != 1.) {
+      color *= opacity;
+      color += (1. - opacity) * getRefractedColor(
+        position,
+        rayDirection,
+        surfaceNormal,
+        refractiveIndex,
+        radius
+      );
+    }
     reflectance = reflectivity * determineReflectance(
       surfaceNormal,
       rayDirection,
@@ -356,9 +545,12 @@ vec3 intersectScene(vec3 rayStart, vec3 rayDirection) {
   return color;
 }
 
-/*
- * MAIM PROGRAM
- */
+/******************************************************************************
+
+MAIN
+
+*******************************************************************************/
+
 void main() {
   vec3 fragColor;
   fragColor = intersectScene(u_CameraPosition, normalize(v_CameraViewDirection));

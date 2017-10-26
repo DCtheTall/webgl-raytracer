@@ -142,6 +142,9 @@ export default class Raytracer {
 
     uniformLocation = this.gl.getUniformLocation(this.shaderProgram, `u_SphereReflectivities[${i}]`);
     this.gl.uniform1f(uniformLocation, sphere.reflectivity);
+
+    uniformLocation = this.gl.getUniformLocation(this.shaderProgram, `u_SphereOpacities[${i}]`);
+    this.gl.uniform1f(uniformLocation, sphere.opacity);
   }
 
   private sendCubeUniform(cube: Cube, i: number): void {

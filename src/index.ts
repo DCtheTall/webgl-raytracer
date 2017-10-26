@@ -43,6 +43,7 @@ function main(): void {
       phongExponent: 10,
       specularColor: [1, 1, 1],
       refractiveIndex: 1.3,
+      opacity: 0.8,
     })
   );
   raytracer.lights.push(
