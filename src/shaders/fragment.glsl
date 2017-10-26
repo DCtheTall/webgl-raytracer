@@ -25,6 +25,7 @@ uniform vec3 u_SphereDiffuseColors[MAXIMUM_NUMBER_OF_SPHERES];
 uniform float u_SpherePhongExponents[MAXIMUM_NUMBER_OF_SPHERES];
 uniform vec3 u_SphereSpecularColors[MAXIMUM_NUMBER_OF_SPHERES];
 uniform float u_SphereRefractiveIndexes[MAXIMUM_NUMBER_OF_SPHERES];
+uniform float u_SphereReflectivities[MAXIMUM_NUMBER_OF_SPHERES];
 
 uniform int u_NumberOfCubes;
 uniform vec3 u_CubeMinExtents[MAXIMUM_NUMBER_OF_CUBES];
@@ -35,6 +36,7 @@ uniform vec3 u_CubeDiffuseColors[MAXIMUM_NUMBER_OF_CUBES];
 uniform float u_CubePhongExponents[MAXIMUM_NUMBER_OF_CUBES];
 uniform vec3 u_CubeSpecularColors[MAXIMUM_NUMBER_OF_CUBES];
 uniform float u_CubeRefractiveIndexes[MAXIMUM_NUMBER_OF_CUBES];
+uniform float u_CubeReflectivities[MAXIMUM_NUMBER_OF_CUBES];
 
 #pragma glslify: intersectPlane = require('./geometry/intersect-plane');
 #pragma glslify: intersectSphere = require('./geometry/intersect-sphere');
@@ -138,6 +140,7 @@ vec3 getReflectedColor(
     float phongExponent;
     vec3 specularColor;
     float refractiveIndex;
+    float reflectivity;
 
     reflectedRayDirection = normalize(reflect(rayDirection, reflectionSurfaceNormal));
     closestDistance = -1.;
@@ -152,7 +155,7 @@ vec3 getReflectedColor(
         u_SphereRadii[j]
       );
 
-      if ((closestDistance < 0. && dist > 0.)
+      if ((closestDistance == -1. && dist > 0.)
           || (dist > 0. && dist < closestDistance)) {
         closestDistance = dist;
         position = reflectionPosition + (dist * reflectedRayDirection);
@@ -161,6 +164,7 @@ vec3 getReflectedColor(
         phongExponent = u_SpherePhongExponents[j];
         specularColor = u_SphereSpecularColors[j];
         refractiveIndex = u_SphereRefractiveIndexes[j];
+        reflectivity = u_SphereReflectivities[j];
       }
     }
 
@@ -176,7 +180,7 @@ vec3 getReflectedColor(
         u_CubePositions[j]
       );
 
-      if ((closestDistance < 0. && dist > 0.)
+      if ((closestDistance == -1. && dist > 0.)
           || (dist > 0. && dist < closestDistance)) {
         closestDistance = dist;
         position = reflectionPosition + (dist * reflectedRayDirection);
@@ -185,6 +189,7 @@ vec3 getReflectedColor(
         phongExponent = u_CubePhongExponents[j];
         specularColor = u_CubeSpecularColors[j];
         refractiveIndex = u_CubeRefractiveIndexes[j];
+        reflectivity = u_CubeReflectivities[j];
       }
     }
 
@@ -203,10 +208,11 @@ vec3 getReflectedColor(
         specularColor = vec3(0.4);
         refractiveIndex = 1.2;
       }
+      reflectivity = 1.;
       phongExponent = FLOOR_PHONG_EXPONENT;
     }
 
-    if (dist > 0.) {
+    if (closestDistance > 0.) {
       vec3 surfaceColor;
       surfaceColor = getNaturalColor(
         diffuseColor,
@@ -216,7 +222,7 @@ vec3 getReflectedColor(
         -reflectedRayDirection,
         position
       );
-      reflectance *= determineReflectance(
+      reflectance *= reflectivity * determineReflectance(
         surfaceNormal,
         reflectedRayDirection,
         refractiveIndex
@@ -226,9 +232,7 @@ vec3 getReflectedColor(
       reflectionPosition = position;
       reflectionSurfaceNormal = surfaceNormal;
       rayDirection = reflectedRayDirection;
-    } else {
-      break;
-    }
+    } else break;
   }
 
   return color;
@@ -248,9 +252,30 @@ vec3 intersectScene(vec3 rayStart, vec3 rayDirection) {
   vec3 specularColor;
   float refractiveIndex;
   float reflectance;
+  float reflectivity;
 
   color = vec3(0.);
   closestDistance = -1.;
+
+  // Testing if the ray interests the ground plane
+  dist = intersectPlane(rayStart, rayDirection);
+  if ((dist > 0. && closestDistance == -1.)
+      || (dist > 0. && dist < closestDistance)) {
+    closestDistance = dist;
+    position = rayStart + (dist * rayDirection);
+    surfaceNormal = vec3(0., 1., 0.);
+    if (mod(floor(position.x / 5.) + floor(position.z / 5.), 2.) != 0.) {
+      diffuseColor = vec3(0.9);
+      specularColor = vec3(1.);
+      refractiveIndex = 1.05;
+    } else {
+      diffuseColor = vec3(0.2, 0.2, 0.4);
+      specularColor = vec3(0.4);
+      refractiveIndex = 1.2;
+    }
+    phongExponent = FLOOR_PHONG_EXPONENT;
+    reflectivity = 1.;
+  }
 
   // Testing if the ray intersects the spheres
   for (int i = 0; i < MAXIMUM_NUMBER_OF_SPHERES; i += 1) {
@@ -270,6 +295,7 @@ vec3 intersectScene(vec3 rayStart, vec3 rayDirection) {
       phongExponent = u_SpherePhongExponents[i];
       specularColor = u_SphereSpecularColors[i];
       refractiveIndex = u_SphereRefractiveIndexes[i];
+      reflectivity = u_SphereReflectivities[i];
     }
   }
 
@@ -300,26 +326,8 @@ vec3 intersectScene(vec3 rayStart, vec3 rayDirection) {
       phongExponent = u_CubePhongExponents[i];
       specularColor = u_CubeSpecularColors[i];
       refractiveIndex = u_CubeRefractiveIndexes[i];
+      reflectivity = u_CubeReflectivities[i];
     }
-  }
-
-  // Testing if the ray interests the ground plane
-  dist = intersectPlane(rayStart, rayDirection);
-  if ((dist > 0. && closestDistance == -1.)
-      || (dist > 0. && dist < closestDistance)) {
-    closestDistance = dist;
-    position = rayStart + (dist * rayDirection);
-    surfaceNormal = vec3(0., 1., 0.);
-    if (mod(floor(position.x / 5.) + floor(position.z / 5.), 2.) != 0.) {
-      diffuseColor = vec3(0.9);
-      specularColor = vec3(1.);
-      refractiveIndex = 1.05;
-    } else {
-      diffuseColor = vec3(0.2, 0.2, 0.4);
-      specularColor = vec3(0.4);
-      refractiveIndex = 1.2;
-    }
-    phongExponent = FLOOR_PHONG_EXPONENT;
   }
 
   // Determine color of the fragment
@@ -332,7 +340,7 @@ vec3 intersectScene(vec3 rayStart, vec3 rayDirection) {
       -rayDirection,
       position
     );
-    reflectance = determineReflectance(
+    reflectance = reflectivity * determineReflectance(
       surfaceNormal,
       rayDirection,
       refractiveIndex

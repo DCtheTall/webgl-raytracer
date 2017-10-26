@@ -139,6 +139,9 @@ export default class Raytracer {
 
     uniformLocation = this.gl.getUniformLocation(this.shaderProgram, `u_SphereRefractiveIndexes[${i}]`);
     this.gl.uniform1f(uniformLocation, sphere.refractiveIndex);
+
+    uniformLocation = this.gl.getUniformLocation(this.shaderProgram, `u_SphereReflectivities[${i}]`);
+    this.gl.uniform1f(uniformLocation, sphere.reflectivity);
   }
 
   private sendCubeUniform(cube: Cube, i: number): void {
@@ -167,6 +170,9 @@ export default class Raytracer {
 
     uniformLocation = this.gl.getUniformLocation(this.shaderProgram, `u_CubeRefractiveIndexes[${i}]`);
     this.gl.uniform1f(uniformLocation, cube.refractiveIndex);
+
+    uniformLocation = this.gl.getUniformLocation(this.shaderProgram, `u_CubeReflectivities[${i}]`);
+    this.gl.uniform1f(uniformLocation, cube.reflectivity);
   }
 
   private sendUniforms(): void {
