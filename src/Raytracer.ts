@@ -182,7 +182,7 @@ export default class Raytracer {
     let uniformLocation: WebGLUniformLocation;
 
     uniformLocation = this.gl.getUniformLocation(this.shaderProgram, 'u_CameraPosition');
-    this.gl.uniform3fv(uniformLocation, this.camera.getEye().getElements());
+    this.gl.uniform3fv(uniformLocation, this.camera.eye.getElements());
 
     uniformLocation = this.gl.getUniformLocation(this.shaderProgram, 'u_AmbientLightColor');
     this.gl.uniform3fv(uniformLocation, this.ambientLightColor);

@@ -13,7 +13,6 @@ const int MAXIMUM_REFLECTION_DEPTH = 2;
 const float FLOOR_PHONG_EXPONENT = 50.;
 const float FLOOR_REFRACTIVE_INDEX = 1.3;
 
-varying vec3 v_CameraViewPosition;
 varying vec3 v_CameraViewDirection;
 
 uniform vec3 u_CameraPosition;
@@ -506,6 +505,7 @@ vec3 intersectScene(vec3 rayStart, vec3 rayDirection) {
       specularColor = u_CubeSpecularColors[i];
       refractiveIndex = u_CubeRefractiveIndexes[i];
       reflectivity = u_CubeReflectivities[i];
+      opacity = 1.;
     }
   }
 

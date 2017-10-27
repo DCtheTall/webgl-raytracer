@@ -1,12 +1,15 @@
 import Vector from './Vector';
 
 export default class Camera {
-  private eye: Vector;
-  private viewDirection: Vector;
+  private lookAt: Vector;
   private right: Vector;
+
+  public eye: Vector;
+  public viewDirection: Vector;
 
   constructor(eye: Vector, lookAt: Vector) {
     this.eye = eye;
+    this.lookAt = lookAt;
     this.viewDirection = Vector.normalize(Vector.subtract(lookAt, eye));
   }
 
@@ -47,7 +50,7 @@ export default class Camera {
     ]);
   }
 
-  getEye(): Vector {
-    return this.eye;
+  public calculateViewDirection(): void {
+    this.viewDirection = Vector.normalize(Vector.subtract(this.lookAt, this.eye));
   }
 }

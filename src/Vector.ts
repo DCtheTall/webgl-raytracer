@@ -11,6 +11,16 @@ export default class Vector {
                       v1.z + v2.z);
   }
 
+  static clamp(v: Vector, min: Vector, max: Vector) {
+    let clamp: (x: number, min: number, max: number) => number;
+    clamp = (x: number, min: number, max: number) => Math.max(min, Math.min(x, max));
+    return new Vector(
+      clamp(v.x, min.x, max.x),
+      clamp(v.y, min.y, max.y),
+      clamp(v.z, min.z, max.z)
+    );
+  }
+
   static cross(v1: Vector, v2: Vector): Vector {
     return new Vector(v1.y * v2.z - v1.z * v2.y,
                       v1.z * v2.x - v1.x * v2.z,
