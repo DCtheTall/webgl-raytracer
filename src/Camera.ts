@@ -13,6 +13,10 @@ export default class Camera {
     this.viewDirection = Vector.normalize(Vector.subtract(lookAt, eye));
   }
 
+  public calculateViewDirection(): void {
+    this.viewDirection = Vector.normalize(Vector.subtract(this.lookAt, this.eye));
+  }
+
   public getCameraViewDirections(aspectRatio: number): Float32Array {
     let down: Vector;
     let right: Vector;
@@ -48,9 +52,5 @@ export default class Camera {
       ...Vector.normalize(topRight).getElements(),
       ...Vector.normalize(bottomRight).getElements(),
     ]);
-  }
-
-  public calculateViewDirection(): void {
-    this.viewDirection = Vector.normalize(Vector.subtract(this.lookAt, this.eye));
   }
 }

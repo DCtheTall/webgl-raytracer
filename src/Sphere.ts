@@ -1,17 +1,13 @@
 import Vector from './Vector';
+import Model, { ModelParameters } from './Model';
 
-export interface SphereParameters {
+export interface SphereParameters extends ModelParameters {
   radius: number;
   position?: Vector;
-  diffuseColor: number[];
-  phongExponent: number;
-  specularColor: number[];
-  refractiveIndex?: number;
-  reflectivity?: number;
   opacity?: number;
 }
 
-export default class Sphere {
+export default class Sphere extends Model {
   public radius: number;
   public position: Vector;
   public diffuseColor: number[];
@@ -23,21 +19,11 @@ export default class Sphere {
 
   constructor({
     radius,
-    position = new Vector(0, 0, 0),
-    diffuseColor,
-    phongExponent,
-    specularColor,
-    refractiveIndex = 1.4,
-    reflectivity = 0.5,
     opacity = 1,
+    ...modelParameters,
   }: SphereParameters) {
+    super(modelParameters);
     this.radius = radius;
-    this.position = position;
-    this.diffuseColor = diffuseColor;
-    this.phongExponent = phongExponent;
-    this.specularColor = specularColor;
-    this.refractiveIndex = refractiveIndex;
-    this.reflectivity = reflectivity;
     this.opacity = opacity;
   }
 }

@@ -4,20 +4,23 @@ import Vector from './Vector';
 import Cube from './Cube';
 import Camera from './Camera';
 import OrbitController from './OrbitController';
+import MouseCaster from './MouseCaster';
 
 function main(): void {
   let canvas: HTMLCanvasElement;
   let sideLength: number;
   let raytracer: RayTracer;
   let orbitController: OrbitController;
+  let mouseCaster: MouseCaster;
 
   canvas = <HTMLCanvasElement>document.getElementById('webgl-canvas');
   sideLength = window.innerWidth > 550 ? 500 : 300;
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
   raytracer = new RayTracer(canvas);
-  raytracer.camera = new Camera(new Vector(0, 4, 14), new Vector(0, 2, 0));
+  raytracer.camera = new Camera(new Vector(0, 4, 14), new Vector(0, 4, 0));
   orbitController = new OrbitController(raytracer);
+  mouseCaster = new MouseCaster(raytracer);
   raytracer.cubes.push(
     new Cube({
       minExtent: new Vector(-3, -3, -3),

@@ -11,13 +11,17 @@ export default class Raytracer {
   private cameraViewDirectionBuffer: WebGLBuffer;
   private shaderProgram: WebGLProgram;
   private ambientLightColor: number[];
+  private rendering: boolean;
+  private lastRender: number;
 
+  public canvas: HTMLCanvasElement;
   public camera: Camera;
   public lights: Light[];
   public spheres: Sphere[];
   public cubes: Cube[];
 
   constructor(canvas: HTMLCanvasElement) {
+    this.canvas = canvas;
     this.aspectRatio = canvas.width / canvas.height;
     this.gl = <WebGLRenderingContext>canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
     this.gl.viewport(0, 0, canvas.width, canvas.height);
@@ -208,9 +212,16 @@ export default class Raytracer {
 
   public render(): void {
     if (!this.shaderProgram) this.createShaderProgram();
-    this.gl.clear(this.gl.COLOR_BUFFER_BIT);
-    this.sendAttributes();
-    this.sendUniforms();
-    this.gl.drawArrays(this.gl.TRIANGLE_STRIP, 0, 4);
+    if (!this.rendering && (!this.lastRender || Date.now() - this.lastRender > 100)) {
+      this.rendering = true;
+
+      this.gl.clear(this.gl.COLOR_BUFFER_BIT);
+      this.sendAttributes();
+      this.sendUniforms();
+      this.gl.drawArrays(this.gl.TRIANGLE_STRIP, 0, 4);
+
+      this.rendering = false;
+      this.lastRender = Date.now();
+    }
   }
 }

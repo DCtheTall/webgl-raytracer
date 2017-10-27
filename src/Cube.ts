@@ -1,21 +1,14 @@
 import Vector from './Vector';
 import Quaternion from './Quaternion';
+import Model, { ModelParameters } from './Model';
 
-export interface CubeParameters {
+export interface CubeParameters extends ModelParameters {
   minExtent: Vector;
   maxExtent: Vector;
-  position?: Vector;
   rotation?: Quaternion;
-  diffuseColor: number[];
-  phongExponent: number;
-  specularColor: number[];
-  refractiveIndex?: number;
-  reflectivity?: number;
 }
 
-export default class Cube {
-  private rotation: Quaternion;
-
+export default class Cube extends Model {
   public minExtent: Vector;
   public maxExtent: Vector;
   public position: Vector;
@@ -24,26 +17,19 @@ export default class Cube {
   public specularColor: number[];
   public refractiveIndex: number;
   public reflectivity: number;
+  public rotation: Quaternion;
 
   constructor({
     minExtent,
     maxExtent,
-    position = new Vector(0, 0, 0),
     rotation,
-    diffuseColor,
-    phongExponent,
-    specularColor,
-    refractiveIndex = 1.4,
-    reflectivity = 0.2,
+    reflectivity = 0.1,
+    ...modelParameters,
   }: CubeParameters) {
+    super(modelParameters);
     this.minExtent = minExtent;
     this.maxExtent = maxExtent;
-    this.position = position;
     this.rotation = rotation;
-    this.diffuseColor = diffuseColor;
-    this.phongExponent = phongExponent;
-    this.specularColor = specularColor;
-    this.refractiveIndex = refractiveIndex;
     this.reflectivity = reflectivity;
   }
 

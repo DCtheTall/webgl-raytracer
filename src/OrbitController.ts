@@ -45,12 +45,6 @@ export default class OrbitController {
     );
     this.raytracer.camera.calculateViewDirection();
 
-    // frame cap at 10 fps to ease load on GPU
-    if (!this.rendering && (!this.lastRender || Date.now() - this.lastRender > 100)) {
-      this.rendering = true;
-      this.raytracer.render();
-      this.rendering = false;
-      this.lastRender = Date.now();
-    }
+    this.raytracer.render();
   }
 }

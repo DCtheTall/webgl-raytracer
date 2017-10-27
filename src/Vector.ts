@@ -11,6 +11,14 @@ export default class Vector {
                       v1.z + v2.z);
   }
 
+  static applyRotationQuaternion(v: Vector, q: Quaternion): Vector {
+    let p: Quaternion;
+    p = new Quaternion(0, v.x, v.y, v.z);
+    p = Quaternion.multiply(p, q.conjugate());
+    p = Quaternion.multiply(q, p);
+    return new Vector(p.i, p.j, p.k);
+  }
+
   static clamp(v: Vector, min: Vector, max: Vector) {
     let clamp: (x: number, min: number, max: number) => number;
     clamp = (x: number, min: number, max: number) => Math.max(min, Math.min(x, max));
@@ -25,6 +33,14 @@ export default class Vector {
     return new Vector(v1.y * v2.z - v1.z * v2.y,
                       v1.z * v2.x - v1.x * v2.z,
                       v1.x * v2.y - v1.y * v2.x);
+  }
+
+  static divide(v1: Vector, v2: Vector): Vector {
+    return new Vector((v1.x / v2.x), (v1.y / v2.y), (v1.z / v2.z));
+  }
+
+  static dot(v1: Vector, v2: Vector): number {
+    return (v1.x * v2.x) + (v1.y * v2.y) + (v1.z * v2.z);
   }
 
   static mag(v: Vector): number {

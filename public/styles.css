@@ -1,6 +1,7 @@
 body {
   background: #333;
   color: #dfdfdf;
+  cursor: move;
   font-family: Helvetica;
   padding: 0;
   margin: 0;
