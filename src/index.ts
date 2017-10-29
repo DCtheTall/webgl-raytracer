@@ -5,6 +5,7 @@ import Cube from './Cube';
 import Camera from './Camera';
 import OrbitController from './OrbitController';
 import MouseCaster from './MouseCaster';
+import Model from './Model';
 
 function main(): void {
   let canvas: HTMLCanvasElement;
@@ -47,9 +48,9 @@ function main(): void {
       phongExponent: 10,
       specularColor: [1, 1, 1],
       refractiveIndex: 1.3,
-      opacity: 0.95,
       useTexture: true,
       reflectivity: 0.1,
+      angularVelocty: Math.PI / 5,
     }).setTextureImages(
       <HTMLImageElement>document.getElementById('earth-texture'),
       <HTMLImageElement>document.getElementById('earth-bump-map-texture')
@@ -62,11 +63,12 @@ function main(): void {
       intensity: 700,
     },
     {
-      position: new Vector(20, 40, 15),
+      position: new Vector(40, 10, 0),
       color: [1, 1, 1],
-      intensity: 500,
+      intensity: 700,
     }
   );
+  // setInterval(raytracer.render.bind(raytracer), 100);
   raytracer.render();
 }
 

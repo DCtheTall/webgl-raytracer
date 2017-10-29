@@ -75,8 +75,8 @@ export default class MouseCaster {
     if (closestModel) {
       this.closestModel = closestModel;
       closestModel.isHovering = true;
-      this.raytracer.render();
     }
+
     this.raytracer.render();
   }
 }

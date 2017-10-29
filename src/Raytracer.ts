@@ -1,5 +1,6 @@
 import Camera from './Camera';
 import Light from './Light';
+import Model from './Model';
 import Sphere from './Sphere';
 import Cube from './Cube';
 import Vector from './Vector';
@@ -175,6 +176,9 @@ export default class Raytracer {
 
     uniformLocation = this.gl.getUniformLocation(this.shaderProgram, `u_SphereIsHoverings[${i}]`);
     this.gl.uniform1i(uniformLocation, +sphere.isHovering);
+
+    uniformLocation = this.gl.getUniformLocation(this.shaderProgram, `u_SphereRotations[${i}]`);
+    this.gl.uniformMatrix3fv(uniformLocation, false, sphere.getRotationMatrix());
   }
 
   private sendCubeUniform(cube: Cube, i: number): void {

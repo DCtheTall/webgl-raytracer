@@ -4,6 +4,20 @@ export default class Quaternion {
               public j: number,
               public k: number) {}
 
+  static rotationMatrix(q: Quaternion): number[] {
+    return [
+      1 - (2 * ((q.j ** 2) + (q.k ** 2))),
+      2 * ((q.i * q.j) + (q.k * q.r)),
+      2 * ((q.i * q.k) - (q.j * q.r)), // first column
+      2 * ((q.i * q.j) - (q.k * q.r)),
+      1 - (2 * ((q.i ** 2) + (q.k ** 2))),
+      2 * ((q.j * q.k) + (q.i * q.r)), // second column
+      2 * ((q.i * q.k) + (q.j * q.r)),
+      2 * ((q.j * q.k) - (q.i * q.r)),
+      1 - (2 * ((q.i ** 2) + (q.j ** 2))), // third column
+    ];
+  }
+
   static mag(q: Quaternion): number {
     return ((q.r ** 2) - ((q.i ** 2) + (q.j ** 2) + (q.k ** 2))) ** 0.5;
   }
@@ -19,19 +33,15 @@ export default class Quaternion {
     return new Quaternion(this.r, -this.i, -this.j, -this.k);
   }
 
-  public getAsRotationMatrixElements(): number[] {
+  public getRotationMatrixElements(): number[] {
     let q: Quaternion;
     q = this;
-    return [
-      1 - (2 * ((q.j ** 2) + (q.k ** 2))),
-      2 * ((q.i * q.j) + (q.k * q.r)),
-      2 * ((q.i * q.k) - (q.j * q.r)), // first column
-      2 * ((q.i * q.j) - (q.k * q.r)),
-      1 - (2 * ((q.i ** 2) + (q.k ** 2))),
-      2 * ((q.j * q.k) + (q.i * q.r)), // second column
-      2 * ((q.i * q.k) + (q.j * q.r)),
-      2 * ((q.j * q.k) - (q.i * q.r)),
-      1 - (2 * ((q.i ** 2) + (q.j ** 2))), // third column
-    ];
+    return Quaternion.rotationMatrix(q);
+  }
+
+  public getInverseRotationMatrixElements(): number[] {
+    let q: Quaternion;
+    q = this.conjugate();
+    return Quaternion.rotationMatrix(q);
   }
 }

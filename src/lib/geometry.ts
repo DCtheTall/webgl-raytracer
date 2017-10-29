@@ -1,6 +1,9 @@
 import Vector from '../Vector';
 import Quaternion from '../Quaternion';
 
+/**
+ * Ray intersection test for a sphere
+ */
 export function intersectSphere(
   rayStart: Vector,
   rayDirection: Vector,
@@ -23,6 +26,9 @@ export function intersectSphere(
   return dist;
 }
 
+/**
+ * Ray intersection test for a cube
+ */
 export function intersectCube(
   rayStart: Vector,
   rayDirection: Vector,

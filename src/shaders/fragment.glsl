@@ -13,6 +13,8 @@ const int MAXIMUM_REFLECTION_DEPTH = 2;
 const float FLOOR_PHONG_EXPONENT = 50.;
 const float FLOOR_REFRACTIVE_INDEX = 1.3;
 const float PI = acos(-1.);
+const float DIFFUSE_HOVER_GLOW_MULTIPLIER = 2.;
+const float SPECULAR_HOVER_GLOW_MULTIPLIER = 1.25;
 
 varying vec3 v_CameraViewDirection;
 
@@ -37,6 +39,7 @@ uniform bool u_SphereUseTextures[MAXIMUM_NUMBER_OF_SPHERES];
 uniform sampler2D u_SphereDiffuseTextureSamplers[MAXIMUM_NUMBER_OF_SPHERES];
 uniform sampler2D u_SphereSpecularTextureSamplers[MAXIMUM_NUMBER_OF_SPHERES];
 uniform bool u_SphereIsHoverings[MAXIMUM_NUMBER_OF_SPHERES];
+uniform mat3 u_SphereRotations[MAXIMUM_NUMBER_OF_SPHERES];
 
 uniform int u_NumberOfCubes;
 uniform vec3 u_CubeMinExtents[MAXIMUM_NUMBER_OF_CUBES];
@@ -217,11 +220,11 @@ vec3 getRefractedColor(
       surfaceNormal = normalize(position - u_SpherePositions[i]);
       if (u_SphereUseTextures[i]) {
         diffuseColor = getSphereColorFromTexture(
-          surfaceNormal,
+          u_SphereRotations[i] * surfaceNormal,
           u_SphereDiffuseTextureSamplers[i]
         );
         specularColor = getSphereColorFromTexture(
-          surfaceNormal,
+          u_SphereRotations[i] * surfaceNormal,
           u_SphereSpecularTextureSamplers[i]
         );
       } else {
@@ -266,8 +269,8 @@ vec3 getRefractedColor(
 
   if (closestDistance > 0.) {
     if (isHovering) {
-      diffuseColor *= 2.;
-      specularColor *= 1.25;
+      diffuseColor *= DIFFUSE_HOVER_GLOW_MULTIPLIER;
+      specularColor *= SPECULAR_HOVER_GLOW_MULTIPLIER;
     }
     color = getNaturalColor(
       diffuseColor,
@@ -337,11 +340,11 @@ vec3 getReflectedColor(
         surfaceNormal = normalize(position - u_SpherePositions[j]);
         if (u_SphereUseTextures[j]) {
           diffuseColor = getSphereColorFromTexture(
-            surfaceNormal,
+            u_SphereRotations[j] * surfaceNormal,
             u_SphereDiffuseTextureSamplers[j]
           );
           specularColor = getSphereColorFromTexture(
-            surfaceNormal,
+            u_SphereRotations[j] * surfaceNormal,
             u_SphereSpecularTextureSamplers[j]
           );
         } else {
@@ -413,8 +416,8 @@ vec3 getReflectedColor(
     if (closestDistance > 0.) {
       vec3 surfaceColor;
       if (isHovering) {
-        diffuseColor *= 2.;
-        specularColor *= 1.25;
+        diffuseColor *= DIFFUSE_HOVER_GLOW_MULTIPLIER;
+        specularColor *= SPECULAR_HOVER_GLOW_MULTIPLIER;
       }
       surfaceColor = getNaturalColor(
         diffuseColor,
@@ -517,11 +520,11 @@ vec3 intersectScene(vec3 rayStart, vec3 rayDirection) {
       surfaceNormal = normalize(position - u_SpherePositions[i]);
       if (u_SphereUseTextures[i]) {
         diffuseColor = getSphereColorFromTexture(
-          surfaceNormal,
+          u_SphereRotations[i] * surfaceNormal,
           u_SphereDiffuseTextureSamplers[i]
         );
         specularColor = getSphereColorFromTexture(
-          surfaceNormal,
+          u_SphereRotations[i] * surfaceNormal,
           u_SphereSpecularTextureSamplers[i]
         );
       } else {
@@ -573,8 +576,8 @@ vec3 intersectScene(vec3 rayStart, vec3 rayDirection) {
   // Determine color of the fragment
   if (closestDistance > 0.) {
     if (isHovering) {
-      diffuseColor *= 2.;
-      specularColor *= 1.25;
+      diffuseColor *= DIFFUSE_HOVER_GLOW_MULTIPLIER;
+      specularColor *= SPECULAR_HOVER_GLOW_MULTIPLIER;
     }
     color = getNaturalColor(
       diffuseColor,

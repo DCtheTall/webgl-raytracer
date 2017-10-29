@@ -44,7 +44,6 @@ export default class OrbitController {
       this.radius * Math.sin(this.polarAngle) * Math.sin(this.azimuthalAngle)
     );
     this.raytracer.camera.calculateViewDirection();
-
     this.raytracer.render();
   }
 }

@@ -1,4 +1,5 @@
 import Vector from './Vector';
+import Quaternion from './Quaternion';
 import Model, { ModelParameters } from './Model';
 import { isImagePowerOfTwo } from './lib/helpers';
 
@@ -7,11 +8,15 @@ export interface SphereParameters extends ModelParameters {
   position?: Vector;
   opacity?: number;
   useTexture?: boolean;
+  angularVelocty?: number;
 }
 
 export default class Sphere extends Model {
   private diffuseTextureImage: HTMLImageElement;
   private specularTextureImage: HTMLImageElement;
+  private createdAt: number;
+  private rotationTimer: number;
+  private angularVelocty: number;
 
   public radius: number;
   public position: Vector;
@@ -29,12 +34,16 @@ export default class Sphere extends Model {
     radius,
     opacity = 1,
     useTexture = false,
+    angularVelocty = 0,
     ...modelParameters,
   }: SphereParameters) {
     super(modelParameters);
     this.radius = radius;
     this.opacity = opacity;
     this.useTexture = useTexture;
+    this.createdAt = Date.now();
+    this.rotationTimer = this.createdAt;
+    this.angularVelocty = angularVelocty;
   }
 
   static loadTexture(gl: WebGLRenderingContext, image: HTMLImageElement): WebGLTexture {
@@ -47,6 +56,17 @@ export default class Sphere extends Model {
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
     return texture;
+  }
+
+  public getRotationMatrix(): number[] {
+    let theta: number;
+    let v: Vector;
+    let rotation: Quaternion;
+    this.rotationTimer += 100;
+    theta = (this.rotationTimer - this.createdAt) * this.angularVelocty * 1e-3;
+    v = Vector.scale(Math.sin(theta / 2), new Vector(0, 1, 0));
+    rotation = new Quaternion(Math.cos(theta / 2), v.x, v.y, v.z);
+    return rotation.getRotationMatrixElements();
   }
 
   public loadDiffuseTexture(gl: WebGLRenderingContext): void {
