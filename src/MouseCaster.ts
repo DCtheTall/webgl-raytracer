@@ -11,10 +11,15 @@ import {
 export default class MouseCaster {
   private raytracer: Raytracer;
   private closestModel: Model;
+  private mouseMoveCallback: (event?: MouseEvent) => void;
+
+  public enabled: boolean;
 
   constructor(raytracer: Raytracer) {
     this.raytracer = raytracer;
-    window.addEventListener('mousemove', this.castRayIntoScene.bind(this));
+    this.mouseMoveCallback = () => {};
+    this.enabled = false;
+    window.addEventListener('mousemove', (event) => this.mouseMoveCallback(event));
   }
 
   private castRayIntoScene(event: MouseEvent): void {
@@ -78,5 +83,15 @@ export default class MouseCaster {
     }
 
     this.raytracer.render();
+  }
+
+  public enable(): void {
+    this.mouseMoveCallback = this.castRayIntoScene;
+    this.enabled = true;
+  }
+
+  public disable(): void {
+    this.mouseMoveCallback = () => {};
+    this.enabled = false;
   }
 }

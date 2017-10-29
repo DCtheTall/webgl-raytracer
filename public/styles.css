@@ -1,7 +1,6 @@
 body {
   background: #333;
   color: #dfdfdf;
-  cursor: move;
   font-family: Helvetica;
   padding: 0;
   margin: 0;
@@ -10,4 +9,42 @@ body {
 
 .earth-texture {
   display: none;
+}
+
+.text-box {
+  background: #333;
+  border-radius: 3px;
+  box-shadow: 0 2px 2px #000;
+  color: #fff;
+  padding: 10px;
+  font-family: Arial;
+  text-align: left;
+  width: 200px;
+}
+
+.introduction {
+  left: 10px;
+  position: absolute;
+  top: 10px;
+}
+
+.controller {
+  position: absolute;
+  right: 10px;
+  top: 10px;
+}
+
+.controller button {
+  background: rgba(255, 255, 255, .4);
+  border: none;
+  color: #222;
+  cursor: pointer;
+  font-size: 16px;
+  margin: 10px 0;
+  outline: none  !important;
+  padding: 5px;
+}
+
+.controller button:hover {
+  background: rgba(255, 255, 255, .5);
 }

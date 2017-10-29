@@ -6,4 +6,13 @@ html
     image#earth-texture(src="/earth.jpg" class="earth-texture")
     image#earth-bump-map-texture(src="/earth-bump-map.jpg" class="earth-texture")
     canvas#webgl-canvas
+    div.text-box.introduction
+      strong WebGL Raytracer
+      br
+      br
+      | This is a real time WebGL raytracer. It uses a fragment shader to render realistic looking optical effects such as shadow casting, reflection, and refraction.
+    div.text-box.controller
+      strong Controls:
+      button#orbit-control-toggle
+      button#mouse-caster-toggle
     script(type="text/javascript" src="/bundle.js")

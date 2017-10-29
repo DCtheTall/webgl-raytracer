@@ -8,8 +8,9 @@ export default class OrbitController {
   private azimuthalAngle: number;
   private radius: number;
   private initialY: number;
-  private lastRender: number;
-  private rendering: Boolean;
+  private mouseMoveCallback: (event?: MouseEvent) => void;
+
+  public enabled: boolean;
 
   constructor(raytracer: Raytracer) {
     this.raytracer = raytracer;
@@ -18,11 +19,12 @@ export default class OrbitController {
     this.radius = Vector.mag(new Vector(raytracer.camera.eye.x, 0, raytracer.camera.eye.z));
     this.polarAngle = Math.acos(raytracer.camera.eye.x / this.radius);
     this.initialY = raytracer.camera.eye.y;
-    this.rendering = false;
+    this.mouseMoveCallback = () => {};
+    this.enabled = false;
 
     window.addEventListener('mousedown', () => this.isMouseDown = true);
     window.addEventListener('mouseup', () => this.isMouseDown = false);
-    window.addEventListener('mousemove', this.moveCamera.bind(this));
+    window.addEventListener('mousemove', (event: MouseEvent) => this.mouseMoveCallback(event));
   }
 
   private moveCamera(event: MouseEvent): void {
@@ -45,5 +47,15 @@ export default class OrbitController {
     );
     this.raytracer.camera.calculateViewDirection();
     this.raytracer.render();
+  }
+
+  public enable(): void {
+    this.mouseMoveCallback = this.moveCamera;
+    this.enabled = true;
+  }
+
+  public disable(): void {
+    this.mouseMoveCallback = () => {};
+    this.enabled = false;
   }
 }
