@@ -45,7 +45,7 @@ export default class MouseCaster {
 
     this.raytracer.spheres.forEach((sphere: Sphere) => {
       let distance: number;
-      sphere.glowOff();
+      sphere.isHovering = false;
       distance = intersectSphere(rayStart, rayDirection, sphere.position, sphere.radius);
       if ((!closestModel && distance > 0)
           || (distance > 0 && distance < closestDistance)) {
@@ -56,7 +56,7 @@ export default class MouseCaster {
 
     this.raytracer.cubes.forEach((cube: Cube) => {
       let distance: number;
-      cube.glowOff();
+      cube.isHovering = false;
       distance = intersectCube(
         rayStart,
         rayDirection,
@@ -74,7 +74,7 @@ export default class MouseCaster {
 
     if (closestModel) {
       this.closestModel = closestModel;
-      closestModel.glowOn();
+      closestModel.isHovering = true;
       this.raytracer.render();
     }
     this.raytracer.render();

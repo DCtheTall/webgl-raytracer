@@ -172,6 +172,9 @@ export default class Raytracer {
       this.gl.bindTexture(this.gl.TEXTURE_2D, sphere.specularTexture);
       this.gl.uniform1i(uniformLocation, i);
     }
+
+    uniformLocation = this.gl.getUniformLocation(this.shaderProgram, `u_SphereIsHoverings[${i}]`);
+    this.gl.uniform1i(uniformLocation, +sphere.isHovering);
   }
 
   private sendCubeUniform(cube: Cube, i: number): void {
@@ -203,6 +206,9 @@ export default class Raytracer {
 
     uniformLocation = this.gl.getUniformLocation(this.shaderProgram, `u_CubeReflectivities[${i}]`);
     this.gl.uniform1f(uniformLocation, cube.reflectivity);
+
+    uniformLocation = this.gl.getUniformLocation(this.shaderProgram, `u_CubeIsHoverings[${i}]`);
+    this.gl.uniform1i(uniformLocation, +cube.isHovering);
   }
 
   private sendUniforms(): void {

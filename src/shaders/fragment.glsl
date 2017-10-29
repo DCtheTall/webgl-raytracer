@@ -36,6 +36,7 @@ uniform float u_SphereOpacities[MAXIMUM_NUMBER_OF_SPHERES];
 uniform bool u_SphereUseTextures[MAXIMUM_NUMBER_OF_SPHERES];
 uniform sampler2D u_SphereDiffuseTextureSamplers[MAXIMUM_NUMBER_OF_SPHERES];
 uniform sampler2D u_SphereSpecularTextureSamplers[MAXIMUM_NUMBER_OF_SPHERES];
+uniform bool u_SphereIsHoverings[MAXIMUM_NUMBER_OF_SPHERES];
 
 uniform int u_NumberOfCubes;
 uniform vec3 u_CubeMinExtents[MAXIMUM_NUMBER_OF_CUBES];
@@ -47,6 +48,7 @@ uniform float u_CubePhongExponents[MAXIMUM_NUMBER_OF_CUBES];
 uniform vec3 u_CubeSpecularColors[MAXIMUM_NUMBER_OF_CUBES];
 uniform float u_CubeRefractiveIndexes[MAXIMUM_NUMBER_OF_CUBES];
 uniform float u_CubeReflectivities[MAXIMUM_NUMBER_OF_CUBES];
+uniform bool u_CubeIsHoverings[MAXIMUM_NUMBER_OF_CUBES];
 
 /******************************************************************************
 
@@ -167,6 +169,7 @@ vec3 getRefractedColor(
   vec3 diffuseColor;
   vec3 specularColor;
   float phongExponent;
+  bool isHovering;
 
   color = vec3(0.);
   transmitRay(
@@ -193,6 +196,7 @@ vec3 getRefractedColor(
       specularColor = vec3(0.4);
     }
     phongExponent = FLOOR_PHONG_EXPONENT;
+    isHovering = false;
   }
 
   for (int i = 0; i < MAXIMUM_NUMBER_OF_SPHERES; i += 1) {
@@ -225,6 +229,7 @@ vec3 getRefractedColor(
         specularColor = u_SphereSpecularColors[i];
       }
       phongExponent = u_SpherePhongExponents[i];
+      isHovering = u_SphereIsHoverings[i];
     }
   }
 
@@ -255,10 +260,15 @@ vec3 getRefractedColor(
       diffuseColor = u_CubeDiffuseColors[i];
       phongExponent = u_CubePhongExponents[i];
       specularColor = u_CubeSpecularColors[i];
+      isHovering = u_CubeIsHoverings[i];
     }
   }
 
   if (closestDistance > 0.) {
+    if (isHovering) {
+      diffuseColor *= 2.;
+      specularColor *= 1.25;
+    }
     color = getNaturalColor(
       diffuseColor,
       phongExponent,
@@ -304,6 +314,7 @@ vec3 getReflectedColor(
     float refractiveIndex;
     float reflectivity;
     float radius;
+    bool isHovering;
 
     reflectedRayDirection = normalize(reflect(rayDirection, reflectionSurfaceNormal));
     closestDistance = -1.;
@@ -342,6 +353,7 @@ vec3 getReflectedColor(
         reflectivity = u_SphereReflectivities[j];
         opacity = u_SphereOpacities[j];
         radius = u_SphereRadii[j];
+        isHovering = u_SphereIsHoverings[j];
       }
     }
 
@@ -374,6 +386,7 @@ vec3 getReflectedColor(
         specularColor = u_CubeSpecularColors[j];
         refractiveIndex = u_CubeRefractiveIndexes[j];
         reflectivity = u_CubeReflectivities[j];
+        isHovering = u_CubeIsHoverings[j];
       }
     }
 
@@ -394,10 +407,15 @@ vec3 getReflectedColor(
       }
       reflectivity = 1.;
       phongExponent = FLOOR_PHONG_EXPONENT;
+      isHovering = false;
     }
 
     if (closestDistance > 0.) {
       vec3 surfaceColor;
+      if (isHovering) {
+        diffuseColor *= 2.;
+        specularColor *= 1.25;
+      }
       surfaceColor = getNaturalColor(
         diffuseColor,
         phongExponent,
@@ -456,6 +474,7 @@ vec3 intersectScene(vec3 rayStart, vec3 rayDirection) {
   float refractiveIndex;
   float reflectance;
   float reflectivity;
+  bool isHovering;
 
   color = vec3(0.);
   closestDistance = -1.;
@@ -479,6 +498,7 @@ vec3 intersectScene(vec3 rayStart, vec3 rayDirection) {
     }
     phongExponent = FLOOR_PHONG_EXPONENT;
     reflectivity = 1.;
+    isHovering = false;
   }
 
   // Testing if the ray intersects the spheres
@@ -513,6 +533,7 @@ vec3 intersectScene(vec3 rayStart, vec3 rayDirection) {
       reflectivity = u_SphereReflectivities[i];
       opacity = u_SphereOpacities[i];
       radius = u_SphereRadii[i];
+      isHovering = u_SphereIsHoverings[i];
     }
   }
 
@@ -545,11 +566,16 @@ vec3 intersectScene(vec3 rayStart, vec3 rayDirection) {
       refractiveIndex = u_CubeRefractiveIndexes[i];
       reflectivity = u_CubeReflectivities[i];
       opacity = 1.;
+      isHovering = u_CubeIsHoverings[i];
     }
   }
 
   // Determine color of the fragment
   if (closestDistance > 0.) {
+    if (isHovering) {
+      diffuseColor *= 2.;
+      specularColor *= 1.25;
+    }
     color = getNaturalColor(
       diffuseColor,
       phongExponent,

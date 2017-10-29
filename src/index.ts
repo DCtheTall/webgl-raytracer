@@ -47,9 +47,9 @@ function main(): void {
       phongExponent: 10,
       specularColor: [1, 1, 1],
       refractiveIndex: 1.3,
-      opacity: 1,
+      opacity: 0.95,
       useTexture: true,
-      reflectivity: 0,
+      reflectivity: 0.1,
     }).setTextureImages(
       <HTMLImageElement>document.getElementById('earth-texture'),
       <HTMLImageElement>document.getElementById('earth-bump-map-texture')

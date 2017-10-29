@@ -20,6 +20,7 @@ export default class Model {
   public refractiveIndex: number;
   public reflectivity: number;
   public opacity: number;
+  public isHovering: boolean;
 
   constructor({
     position = new Vector(0, 0, 0),
@@ -37,15 +38,6 @@ export default class Model {
     this.originalSpecularColor = specularColor;
     this.refractiveIndex = refractiveIndex;
     this.reflectivity = reflectivity;
-  }
-
-  public glowOn(): void {
-    this.diffuseColor = this.originalDiffuseColor.map(x => 2 * x);
-    this.specularColor = this.originalSpecularColor.map(x => 1.25 * x);
-  }
-
-  public glowOff(): void {
-    this.diffuseColor = this.originalDiffuseColor;
-    this.specularColor = this.originalSpecularColor;
+    this.isHovering = false;
   }
 }
