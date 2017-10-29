@@ -5,8 +5,6 @@ import Sphere from './Sphere';
 import Cube from './Cube';
 import Vector from './Vector';
 
-// TODO optimize render by only updating color that change
-
 export default class Raytracer {
   private FRAME_RATE = 10;
 
@@ -80,7 +78,7 @@ export default class Raytracer {
     this.shaderProgram = shaderProgram;
   }
 
-  private sendVecAttribute(
+  private sendVectorAttribute(
     buffer: WebGLBuffer,
     attrLocation: number,
     dimension: number,
@@ -101,14 +99,14 @@ export default class Raytracer {
                                        1,  1,
                                        1, -1]);
     attribLocation = this.gl.getAttribLocation(this.shaderProgram, 'a_WindowPosition');
-    this.sendVecAttribute(
+    this.sendVectorAttribute(
       this.windowPositionBuffer,
       attribLocation,
       2,
       windowCorners
     );
     attribLocation = this.gl.getAttribLocation(this.shaderProgram, 'a_CameraViewDirection');
-    this.sendVecAttribute(
+    this.sendVectorAttribute(
       this.cameraViewDirectionBuffer,
       attribLocation,
       3,
@@ -116,130 +114,99 @@ export default class Raytracer {
     );
   }
 
-  private sendLightUniforms(light: Light, i: number): void {
+  private sendFloatUniform(uniformName: string, value: number): void {
     let uniformLocation: WebGLUniformLocation;
+    uniformLocation = this.gl.getUniformLocation(this.shaderProgram, uniformName);
+    this.gl.uniform1f(uniformLocation, value);
+  }
 
-    uniformLocation = this.gl.getUniformLocation(this.shaderProgram, `u_LightPositions[${i}]`);
-    this.gl.uniform3fv(uniformLocation, light.position.getElements());
+  private sendVectorUniform(uniformName: string, value: number[]): void {
+    let uniformLocation: WebGLUniformLocation;
+    uniformLocation = this.gl.getUniformLocation(this.shaderProgram, uniformName);
+    this.gl.uniform3fv(uniformLocation, value);
+  }
 
-    uniformLocation = this.gl.getUniformLocation(this.shaderProgram, `u_LightColors[${i}]`);
-    this.gl.uniform3fv(uniformLocation, light.color);
+  private sendIntUniform(uniformName: string, value: number): void {
+    let uniformLocation: WebGLUniformLocation;
+    uniformLocation = this.gl.getUniformLocation(this.shaderProgram, uniformName);
+    this.gl.uniform1i(uniformLocation, value);
+  }
 
-    uniformLocation = this.gl.getUniformLocation(this.shaderProgram, `u_LightIntensities[${i}]`);
-    this.gl.uniform1f(uniformLocation, light.intensity);
+  private sendMatrixUniform(uniformName: string, value: number[]): void {
+    let uniformLocation: WebGLUniformLocation;
+    uniformLocation = this.gl.getUniformLocation(this.shaderProgram, uniformName);
+    this.gl.uniformMatrix3fv(uniformLocation, false, value);
+  }
+
+  private sendLightUniforms(light: Light, i: number): void {
+    this.sendVectorUniform(`u_LightPositions[${i}]`, light.position.getElements());
+    this.sendVectorUniform(`u_LightColors[${i}]`, light.color);
+    this.sendFloatUniform(`u_LightIntensities[${i}]`, light.intensity);
   }
 
   private sendSphereUniforms(sphere: Sphere, i: number): void {
-    let uniformLocation: WebGLUniformLocation;
+    if (!this.lastRender) {
+      this.sendFloatUniform(`u_SphereRadii[${i}]`, sphere.radius);
+      this.sendVectorUniform(`u_SphereDiffuseColors[${i}]`, sphere.diffuseColor);
+      this.sendFloatUniform(`u_SpherePhongExponents[${i}]`, sphere.phongExponent);
+      this.sendVectorUniform(`u_SphereSpecularColors[${i}]`, sphere.specularColor);
+      this.sendFloatUniform(`u_SphereRefractiveIndexes[${i}]`, sphere.refractiveIndex);
+      this.sendFloatUniform(`u_SphereReflectivities[${i}]`, sphere.reflectivity);
+      this.sendFloatUniform(`u_SphereOpacities[${i}]`, sphere.opacity);
+      this.sendIntUniform(`u_SphereUseTextures[${i}]`, +sphere.useTexture);
 
-    uniformLocation = this.gl.getUniformLocation(this.shaderProgram, `u_SpherePositions[${i}]`);
-    this.gl.uniform3fv(uniformLocation, sphere.position.getElements());
+      if (sphere.useTexture) {
+        if (!sphere.diffuseTexture) sphere.loadDiffuseTexture(this.gl);
+        if (!sphere.specularTexture) sphere.loadSpecularTexture(this.gl);
 
-    uniformLocation = this.gl.getUniformLocation(this.shaderProgram, `u_SphereRadii[${i}]`);
-    this.gl.uniform1f(uniformLocation, sphere.radius);
+        this.gl.activeTexture(<number>(<any>this.gl)[`TEXTURE${i}`]);
+        this.gl.bindTexture(this.gl.TEXTURE_2D, sphere.diffuseTexture);
+        this.sendIntUniform(`u_SphereDiffuseTextureSamplers[${i}]`, i);
 
-    uniformLocation = this.gl.getUniformLocation(this.shaderProgram, `u_SphereDiffuseColors[${i}]`);
-    this.gl.uniform3fv(uniformLocation, sphere.diffuseColor);
-
-    uniformLocation = this.gl.getUniformLocation(this.shaderProgram, `u_SpherePhongExponents[${i}]`);
-    this.gl.uniform1f(uniformLocation, sphere.phongExponent);
-
-    uniformLocation = this.gl.getUniformLocation(this.shaderProgram, `u_SphereSpecularColors[${i}]`);
-    this.gl.uniform3fv(uniformLocation, sphere.specularColor);
-
-    uniformLocation = this.gl.getUniformLocation(this.shaderProgram, `u_SphereRefractiveIndexes[${i}]`);
-    this.gl.uniform1f(uniformLocation, sphere.refractiveIndex);
-
-    uniformLocation = this.gl.getUniformLocation(this.shaderProgram, `u_SphereReflectivities[${i}]`);
-    this.gl.uniform1f(uniformLocation, sphere.reflectivity);
-
-    uniformLocation = this.gl.getUniformLocation(this.shaderProgram, `u_SphereOpacities[${i}]`);
-    this.gl.uniform1f(uniformLocation, sphere.opacity);
-
-    uniformLocation = this.gl.getUniformLocation(this.shaderProgram, `u_SphereUseTextures[${i}]`);
-    this.gl.uniform1i(uniformLocation, +sphere.useTexture);
-
-    if (sphere.useTexture) {
-      if (!sphere.diffuseTexture) sphere.loadDiffuseTexture(this.gl);
-      if (!sphere.specularTexture) sphere.loadSpecularTexture(this.gl);
-
-      uniformLocation = this.gl.getUniformLocation(this.shaderProgram, `u_SphereDiffuseTextureSamplers[${i}]`);
-      this.gl.activeTexture(<number>(<any>this.gl)[`TEXTURE${i}`]);
-      this.gl.bindTexture(this.gl.TEXTURE_2D, sphere.diffuseTexture);
-      this.gl.uniform1i(uniformLocation, i);
-
-      uniformLocation = this.gl.getUniformLocation(this.shaderProgram, `u_SphereSpecularTextureSamplers[${i}]`);
-      this.gl.activeTexture(<number>(<any>this.gl)[`TEXTURE${i + this.spheres.length}`]);
-      this.gl.bindTexture(this.gl.TEXTURE_2D, sphere.specularTexture);
-      this.gl.uniform1i(uniformLocation, i);
+        this.gl.activeTexture(<number>(<any>this.gl)[`TEXTURE${i + this.spheres.length}`]);
+        this.gl.bindTexture(this.gl.TEXTURE_2D, sphere.specularTexture);
+        this.sendIntUniform(`u_SphereSpecularTextureSamplers[${i}]`, i + this.spheres.length);
+      }
     }
 
-    uniformLocation = this.gl.getUniformLocation(this.shaderProgram, `u_SphereIsHoverings[${i}]`);
-    this.gl.uniform1i(uniformLocation, +sphere.isHovering);
-
-    uniformLocation = this.gl.getUniformLocation(this.shaderProgram, `u_SphereRotations[${i}]`);
-    this.gl.uniformMatrix3fv(uniformLocation, false, sphere.getRotationMatrix());
+    this.sendVectorUniform(`u_SpherePositions[${i}]`, sphere.position.getElements());
+    this.sendIntUniform(`u_SphereIsHoverings[${i}]`, +sphere.isHovering);
+    this.sendMatrixUniform(`u_SphereRotations[${i}]`, sphere.getRotationMatrix());
   }
 
   private sendCubeUniform(cube: Cube, i: number): void {
-    let uniformLocation: WebGLUniformLocation;
+    if (!this.lastRender) {
+      this.sendVectorUniform(`u_CubeMinExtents[${i}]`, cube.minExtent.getElements());
+      this.sendVectorUniform(`u_CubeMaxExtents[${i}]`, cube.maxExtent.getElements());
+      this.sendVectorUniform(`u_CubeDiffuseColors[${i}]`, cube.diffuseColor);
+      this.sendFloatUniform(`u_CubePhongExponents[${i}]`, cube.phongExponent);
+      this.sendVectorUniform(`u_CubeSpecularColors[${i}]`, cube.specularColor);
+      this.sendFloatUniform(`u_CubeRefractiveIndexes[${i}]`, cube.refractiveIndex);
+      this.sendFloatUniform(`u_CubeReflectivities[${i}]`, cube.reflectivity);
+    }
 
-    uniformLocation = this.gl.getUniformLocation(this.shaderProgram, `u_CubeMinExtents[${i}]`);
-    this.gl.uniform3fv(uniformLocation, cube.minExtent.getElements());
-
-    uniformLocation = this.gl.getUniformLocation(this.shaderProgram, `u_CubeMaxExtents[${i}]`);
-    this.gl.uniform3fv(uniformLocation, cube.maxExtent.getElements());
-
-    uniformLocation = this.gl.getUniformLocation(this.shaderProgram, `u_CubeRotationInverses[${i}]`);
-    this.gl.uniformMatrix3fv(uniformLocation, false, cube.getInverseRotationMatrix());
-
-    uniformLocation = this.gl.getUniformLocation(this.shaderProgram, `u_CubePositions[${i}]`);
-    this.gl.uniform3fv(uniformLocation, cube.position.getElements());
-
-    uniformLocation = this.gl.getUniformLocation(this.shaderProgram, `u_CubeDiffuseColors[${i}]`);
-    this.gl.uniform3fv(uniformLocation, cube.diffuseColor);
-
-    uniformLocation = this.gl.getUniformLocation(this.shaderProgram, `u_CubePhongExponents[${i}]`);
-    this.gl.uniform1f(uniformLocation, cube.phongExponent);
-
-    uniformLocation = this.gl.getUniformLocation(this.shaderProgram, `u_CubeSpecularColors[${i}]`);
-    this.gl.uniform3fv(uniformLocation, cube.specularColor);
-
-    uniformLocation = this.gl.getUniformLocation(this.shaderProgram, `u_CubeRefractiveIndexes[${i}]`);
-    this.gl.uniform1f(uniformLocation, cube.refractiveIndex);
-
-    uniformLocation = this.gl.getUniformLocation(this.shaderProgram, `u_CubeReflectivities[${i}]`);
-    this.gl.uniform1f(uniformLocation, cube.reflectivity);
-
-    uniformLocation = this.gl.getUniformLocation(this.shaderProgram, `u_CubeIsHoverings[${i}]`);
-    this.gl.uniform1i(uniformLocation, +cube.isHovering);
+    this.sendMatrixUniform(`u_CubeRotationInverses[${i}]`, cube.getInverseRotationMatrix());
+    this.sendVectorUniform(`u_CubePositions[${i}]`, cube.position.getElements());
+    this.sendIntUniform(`u_CubeIsHoverings[${i}]`, +cube.isHovering);
   }
 
   private sendUniforms(): void {
-    let uniformLocation: WebGLUniformLocation;
+    if (!this.lastRender) {
+      this.sendVectorUniform('u_AmbientLightColor', this.ambientLightColor);
 
-    uniformLocation = this.gl.getUniformLocation(this.shaderProgram, 'u_CameraPosition');
-    this.gl.uniform3fv(uniformLocation, this.camera.eye.getElements());
+      if (this.lights.length > 8) throw new Error('Can only have up to 8 lights without modifying the fragment shader');
+      this.sendIntUniform(`u_NumberOfLights`, this.lights.length);
+      this.lights.forEach(this.sendLightUniforms.bind(this));
+    }
 
-    uniformLocation = this.gl.getUniformLocation(this.shaderProgram, 'u_AmbientLightColor');
-    this.gl.uniform3fv(uniformLocation, this.ambientLightColor);
-
-    if (this.lights.length > 8) throw new Error('Can only have up to 8 lights without modifying the fragment shader');
-    uniformLocation = this.gl.getUniformLocation(this.shaderProgram, `u_NumberOfLights`);
-    this.gl.uniform1i(uniformLocation, this.lights.length);
-
-    this.lights.forEach(this.sendLightUniforms.bind(this));
+    this.sendVectorUniform('u_CameraPosition', this.camera.eye.getElements());
 
     if (this.spheres.length > 8) throw new Error('You can only have up to 8 spheres without modifying the fragment shader');
-    uniformLocation = this.gl.getUniformLocation(this.shaderProgram, 'u_NumberOfSpheres');
-    this.gl.uniform1i(uniformLocation, this.spheres.length);
-
+    this.sendIntUniform('u_NumberOfSpheres', this.spheres.length);
     this.spheres.forEach(this.sendSphereUniforms.bind(this));
 
     if (this.cubes.length > 8) throw new Error('You can only have up to 8 cubes without modifiying the fragment shader');
-    uniformLocation = this.gl.getUniformLocation(this.shaderProgram, 'u_NumberOfCubes');
-    this.gl.uniform1i(uniformLocation, this.cubes.length);
-
+    this.sendIntUniform('u_NumberOfCubes', this.cubes.length);
     this.cubes.forEach(this.sendCubeUniform.bind(this));
   }
 
@@ -249,8 +216,8 @@ export default class Raytracer {
       if (!this.rendering
           && !this.renderHasThrownError
           && (
-        !this.lastRender
-        || Date.now() - this.lastRender > 1000 / this.FRAME_RATE
+            !this.lastRender
+            || Date.now() - this.lastRender > 1000 / this.FRAME_RATE
       )) {
         this.rendering = true;
 
