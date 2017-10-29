@@ -41,14 +41,19 @@ function main(): void {
   );
   raytracer.spheres.push(
     new Sphere({
-      radius: 2,
+      radius: 3,
       diffuseColor: [0.2, 0.2, 1],
       position: new Vector(-1, 5, 5),
       phongExponent: 10,
       specularColor: [1, 1, 1],
       refractiveIndex: 1.3,
-      opacity: 0.8,
-    })
+      opacity: 1,
+      useTexture: true,
+      reflectivity: 0,
+    }).setTextureImages(
+      <HTMLImageElement>document.getElementById('earth-texture'),
+      <HTMLImageElement>document.getElementById('earth-bump-map-texture')
+    )
   );
   raytracer.lights.push(
     {

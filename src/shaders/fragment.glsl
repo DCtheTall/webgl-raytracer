@@ -12,6 +12,7 @@ const int MAXIMUM_NUMBER_OF_LIGHTS = 8;
 const int MAXIMUM_REFLECTION_DEPTH = 2;
 const float FLOOR_PHONG_EXPONENT = 50.;
 const float FLOOR_REFRACTIVE_INDEX = 1.3;
+const float PI = acos(-1.);
 
 varying vec3 v_CameraViewDirection;
 
@@ -32,6 +33,9 @@ uniform vec3 u_SphereSpecularColors[MAXIMUM_NUMBER_OF_SPHERES];
 uniform float u_SphereRefractiveIndexes[MAXIMUM_NUMBER_OF_SPHERES];
 uniform float u_SphereReflectivities[MAXIMUM_NUMBER_OF_SPHERES];
 uniform float u_SphereOpacities[MAXIMUM_NUMBER_OF_SPHERES];
+uniform bool u_SphereUseTextures[MAXIMUM_NUMBER_OF_SPHERES];
+uniform sampler2D u_SphereDiffuseTextureSamplers[MAXIMUM_NUMBER_OF_SPHERES];
+uniform sampler2D u_SphereSpecularTextureSamplers[MAXIMUM_NUMBER_OF_SPHERES];
 
 uniform int u_NumberOfCubes;
 uniform vec3 u_CubeMinExtents[MAXIMUM_NUMBER_OF_CUBES];
@@ -59,6 +63,7 @@ Modules
 #pragma glslify: testForShadow = require('./optics/test-for-shadow', MAXIMUM_NUMBER_OF_SPHERES=MAXIMUM_NUMBER_OF_SPHERES, MAXIMUM_NUMBER_OF_CUBES=MAXIMUM_NUMBER_OF_CUBES, spherePositions=spherePositions, sphereRadii=sphereRadii, cubeMinExtents=cubeMinExtents, cubeMaxExtents=cubeMaxExtents, cubeRotationInverses=cubeRotationInverses, cubePositions=cubePositions);
 #pragma glslify: determineReflectance = require('./optics/determine-reflectance');
 #pragma glslify: transmitRay = require('./optics/transmit-ray');
+#pragma glslify: getSphereColorFromTexture = require('./color/get-sphere-color-from-texture', PI=PI);
 
 /******************************************************************************
 
@@ -206,9 +211,20 @@ vec3 getRefractedColor(
       position = dist * refractedRayStart + refractedRayDirection;
 
       surfaceNormal = normalize(position - u_SpherePositions[i]);
-      diffuseColor = u_SphereDiffuseColors[i];
+      if (u_SphereUseTextures[i]) {
+        diffuseColor = getSphereColorFromTexture(
+          surfaceNormal,
+          u_SphereDiffuseTextureSamplers[i]
+        );
+        specularColor = getSphereColorFromTexture(
+          surfaceNormal,
+          u_SphereSpecularTextureSamplers[i]
+        );
+      } else {
+        diffuseColor = u_SphereDiffuseColors[i];
+        specularColor = u_SphereSpecularColors[i];
+      }
       phongExponent = u_SpherePhongExponents[i];
-      specularColor = u_SphereSpecularColors[i];
     }
   }
 
@@ -308,13 +324,24 @@ vec3 getReflectedColor(
         closestDistance = dist;
         position = reflectionPosition + (dist * reflectedRayDirection);
         surfaceNormal = normalize(position - u_SpherePositions[j]);
-        diffuseColor = u_SphereDiffuseColors[j];
+        if (u_SphereUseTextures[j]) {
+          diffuseColor = getSphereColorFromTexture(
+            surfaceNormal,
+            u_SphereDiffuseTextureSamplers[j]
+          );
+          specularColor = getSphereColorFromTexture(
+            surfaceNormal,
+            u_SphereSpecularTextureSamplers[j]
+          );
+        } else {
+          diffuseColor = u_SphereDiffuseColors[j];
+          specularColor = u_SphereSpecularColors[j];
+        }
         phongExponent = u_SpherePhongExponents[j];
-        specularColor = u_SphereSpecularColors[j];
         refractiveIndex = u_SphereRefractiveIndexes[j];
         reflectivity = u_SphereReflectivities[j];
         opacity = u_SphereOpacities[j];
-        radius = u_SphereRadii[i];
+        radius = u_SphereRadii[j];
       }
     }
 
@@ -389,12 +416,13 @@ vec3 getReflectedColor(
           radius
         );
       }
-      reflectance *= reflectivity * determineReflectance(
+      reflectance *= determineReflectance(
         surfaceNormal,
         reflectedRayDirection,
         refractiveIndex
       );
       color += pow(reflectance, float(i + 1)) * surfaceColor;
+      reflectance *= reflectivity;
 
       reflectionPosition = position;
       reflectionSurfaceNormal = surfaceNormal;
@@ -467,9 +495,20 @@ vec3 intersectScene(vec3 rayStart, vec3 rayDirection) {
       closestDistance = dist;
       position = rayStart + (dist * rayDirection);
       surfaceNormal = normalize(position - u_SpherePositions[i]);
-      diffuseColor = u_SphereDiffuseColors[i];
+      if (u_SphereUseTextures[i]) {
+        diffuseColor = getSphereColorFromTexture(
+          surfaceNormal,
+          u_SphereDiffuseTextureSamplers[i]
+        );
+        specularColor = getSphereColorFromTexture(
+          surfaceNormal,
+          u_SphereSpecularTextureSamplers[i]
+        );
+      } else {
+        diffuseColor = u_SphereDiffuseColors[i];
+        specularColor = u_SphereSpecularColors[i];
+      }
       phongExponent = u_SpherePhongExponents[i];
-      specularColor = u_SphereSpecularColors[i];
       refractiveIndex = u_SphereRefractiveIndexes[i];
       reflectivity = u_SphereReflectivities[i];
       opacity = u_SphereOpacities[i];
@@ -529,12 +568,12 @@ vec3 intersectScene(vec3 rayStart, vec3 rayDirection) {
         radius
       );
     }
-    reflectance = reflectivity * determineReflectance(
+    reflectance = determineReflectance(
       surfaceNormal,
       rayDirection,
       refractiveIndex
     );
-    color += getReflectedColor(
+    color += reflectivity * getReflectedColor(
       position,
       surfaceNormal,
       rayDirection,

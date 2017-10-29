@@ -4,7 +4,11 @@ import Sphere from './Sphere';
 import Cube from './Cube';
 import Vector from './Vector';
 
+// TODO optimize render by only updating color that change
+
 export default class Raytracer {
+  private FRAME_RATE = 10;
+
   private aspectRatio: number;
   private gl: WebGLRenderingContext;
   private windowPositionBuffer: WebGLBuffer;
@@ -13,6 +17,7 @@ export default class Raytracer {
   private ambientLightColor: number[];
   private rendering: boolean;
   private lastRender: number;
+  private renderHasThrownError: boolean;
 
   public canvas: HTMLCanvasElement;
   public camera: Camera;
@@ -149,6 +154,24 @@ export default class Raytracer {
 
     uniformLocation = this.gl.getUniformLocation(this.shaderProgram, `u_SphereOpacities[${i}]`);
     this.gl.uniform1f(uniformLocation, sphere.opacity);
+
+    uniformLocation = this.gl.getUniformLocation(this.shaderProgram, `u_SphereUseTextures[${i}]`);
+    this.gl.uniform1i(uniformLocation, +sphere.useTexture);
+
+    if (sphere.useTexture) {
+      if (!sphere.diffuseTexture) sphere.loadDiffuseTexture(this.gl);
+      if (!sphere.specularTexture) sphere.loadSpecularTexture(this.gl);
+
+      uniformLocation = this.gl.getUniformLocation(this.shaderProgram, `u_SphereDiffuseTextureSamplers[${i}]`);
+      this.gl.activeTexture(<number>(<any>this.gl)[`TEXTURE${i}`]);
+      this.gl.bindTexture(this.gl.TEXTURE_2D, sphere.diffuseTexture);
+      this.gl.uniform1i(uniformLocation, i);
+
+      uniformLocation = this.gl.getUniformLocation(this.shaderProgram, `u_SphereSpecularTextureSamplers[${i}]`);
+      this.gl.activeTexture(<number>(<any>this.gl)[`TEXTURE${i + this.spheres.length}`]);
+      this.gl.bindTexture(this.gl.TEXTURE_2D, sphere.specularTexture);
+      this.gl.uniform1i(uniformLocation, i);
+    }
   }
 
   private sendCubeUniform(cube: Cube, i: number): void {
@@ -211,17 +234,26 @@ export default class Raytracer {
   }
 
   public render(): void {
-    if (!this.shaderProgram) this.createShaderProgram();
-    if (!this.rendering && (!this.lastRender || Date.now() - this.lastRender > 100)) {
-      this.rendering = true;
+    try {
+      if (!this.shaderProgram && !this.renderHasThrownError) this.createShaderProgram();
+      if (!this.rendering
+          && !this.renderHasThrownError
+          && (
+        !this.lastRender
+        || Date.now() - this.lastRender > 1000 / this.FRAME_RATE
+      )) {
+        this.rendering = true;
 
-      this.gl.clear(this.gl.COLOR_BUFFER_BIT);
-      this.sendAttributes();
-      this.sendUniforms();
-      this.gl.drawArrays(this.gl.TRIANGLE_STRIP, 0, 4);
+        this.gl.clear(this.gl.COLOR_BUFFER_BIT);
+        this.sendAttributes();
+        this.sendUniforms();
+        this.gl.drawArrays(this.gl.TRIANGLE_STRIP, 0, 4);
 
-      this.rendering = false;
-      this.lastRender = Date.now();
+        this.rendering = false;
+        this.lastRender = Date.now();
+      }
+    } catch(err) {
+      this.renderHasThrownError = true;
     }
   }
 }
