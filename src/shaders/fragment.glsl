@@ -403,12 +403,13 @@ vec3 getReflectedColor(
         diffuseColor = vec3(0.9);
         specularColor = vec3(1.);
         refractiveIndex = 1.05;
+        reflectivity = 0.2;
       } else {
         diffuseColor = vec3(0.2, 0.2, 0.4);
         specularColor = vec3(0.4);
         refractiveIndex = 1.2;
+        reflectivity = 0.6;
       }
-      reflectivity = 1.;
       phongExponent = FLOOR_PHONG_EXPONENT;
       isHovering = false;
     }
@@ -494,13 +495,14 @@ vec3 intersectScene(vec3 rayStart, vec3 rayDirection) {
       diffuseColor = vec3(0.9);
       specularColor = vec3(1.);
       refractiveIndex = 1.05;
+      reflectivity = 0.2;
     } else {
       diffuseColor = vec3(0.2, 0.2, 0.4);
       specularColor = vec3(0.4);
       refractiveIndex = 1.2;
+      reflectivity = 0.6;
     }
     phongExponent = FLOOR_PHONG_EXPONENT;
-    reflectivity = 1.;
     isHovering = false;
   }
 

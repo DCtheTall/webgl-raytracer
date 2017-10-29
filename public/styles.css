@@ -13,6 +13,7 @@ body {
 
 .text-box {
   background: #333;
+  border: solid 1px #888;
   border-radius: 3px;
   box-shadow: 0 2px 2px #000;
   color: #fff;
@@ -47,4 +48,10 @@ body {
 
 .controller button:hover {
   background: rgba(255, 255, 255, .5);
+}
+
+.hover-modal {
+  display: none;
+  position: absolute;
+  width: 200px;
 }
