@@ -3,12 +3,13 @@ import Quaternion from './Quaternion';
 
 export interface ModelParameters {
   position?: Vector;
-  diffuseColor: number[];
+  diffuseColor?: number[];
   phongExponent: number;
-  specularColor: number[];
+  specularColor?: number[];
   refractiveIndex?: number;
   reflectivity?: number;
   rotation?: Quaternion;
+  hoverable?: boolean;
 }
 
 export default class Model implements ModelParameters {
@@ -20,15 +21,17 @@ export default class Model implements ModelParameters {
   public reflectivity: number;
   public isHovering: boolean;
   public rotation: Quaternion;
+  public hoverable: boolean;
 
   constructor({
     position = new Vector(0, 0, 0),
-    diffuseColor,
+    diffuseColor = [0, 0, 0],
     phongExponent,
-    specularColor,
+    specularColor = [0, 0, 0],
     rotation,
     refractiveIndex = 1.4,
-    reflectivity = 0.5,
+    reflectivity = 0.2,
+    hoverable = true,
   }: ModelParameters) {
     this.position = position;
     this.diffuseColor = diffuseColor;
@@ -38,5 +41,6 @@ export default class Model implements ModelParameters {
     this.reflectivity = reflectivity;
     this.isHovering = false;
     this.rotation = rotation;
+    this.hoverable = hoverable;
   }
 }

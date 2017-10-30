@@ -32,7 +32,7 @@ export default class Raytracer {
     this.gl.clearColor(0, 0, 0, 1);
     this.windowPositionBuffer = this.gl.createBuffer();
     this.cameraViewDirectionBuffer = this.gl.createBuffer();
-    this.ambientLightColor = [.2, .2, .2];
+    this.ambientLightColor = [.18, .2, .22];
     this.lights = [];
     this.spheres = [];
     this.cubes = [];
@@ -170,7 +170,7 @@ export default class Raytracer {
     }
 
     this.sendVectorUniform(`u_SpherePositions[${i}]`, sphere.position.getElements());
-    this.sendIntUniform(`u_SphereIsHoverings[${i}]`, +sphere.isHovering);
+    this.sendIntUniform(`u_SphereIsHoverings[${i}]`, +(sphere.isHovering && sphere.hoverable));
     this.sendMatrixUniform(`u_SphereRotations[${i}]`, sphere.getRotationMatrix());
   }
 
@@ -187,7 +187,7 @@ export default class Raytracer {
 
     this.sendMatrixUniform(`u_CubeRotationInverses[${i}]`, cube.getInverseRotationMatrix());
     this.sendVectorUniform(`u_CubePositions[${i}]`, cube.position.getElements());
-    this.sendIntUniform(`u_CubeIsHoverings[${i}]`, +cube.isHovering);
+    this.sendIntUniform(`u_CubeIsHoverings[${i}]`, +(cube.isHovering && cube.hoverable));
   }
 
   private sendUniforms(): void {

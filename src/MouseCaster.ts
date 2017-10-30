@@ -1,5 +1,6 @@
 import Raytracer from './Raytracer';
 import Vector from './Vector';
+import Quaternion from './Quaternion';
 import Model from './Model';
 import Cube from './Cube';
 import Sphere from './Sphere';
@@ -67,7 +68,7 @@ export default class MouseCaster {
         rayDirection,
         cube.minExtent,
         cube.maxExtent,
-        cube.rotation,
+        cube.rotation || new Quaternion(1, 0, 0, 0),
         cube.position
       );
       if ((!closestModel && distance > 0)
