@@ -21,13 +21,11 @@ export default class Controller {
     this.mouseCaster = new MouseCaster(raytracer);
 
     this.orbitControllerToggle = <HTMLButtonElement>document.getElementById('orbit-control-toggle');
-    this.orbitControllerToggle.innerHTML = 'Enable Orbit Controller';
     this.orbitControllerToggle.addEventListener('click', this.toggleOrbitControls.bind(this));
     this.orbitControllerToggle.addEventListener('mouseenter', this.displayHoverModal.bind(this));
     this.orbitControllerToggle.addEventListener('mouseleave', this.hideHoverModal.bind(this));
 
     this.mouseCasterToggle = <HTMLButtonElement>document.getElementById('mouse-caster-toggle');
-    this.mouseCasterToggle.innerHTML = 'Enable Mouse Casting';
     this.mouseCasterToggle.addEventListener('click', this.toggleMouseCasting.bind(this));
     this.mouseCasterToggle.addEventListener('mouseenter', this.displayHoverModal.bind(this));
     this.mouseCasterToggle.addEventListener('mouseleave', this.hideHoverModal.bind(this));

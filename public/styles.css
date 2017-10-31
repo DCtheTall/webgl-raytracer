@@ -36,9 +36,10 @@ body {
 }
 
 .controller button {
-  background: rgba(255, 255, 255, .4);
-  border: none;
-  color: #222;
+  background: #333;
+  border: solid 1px #fff;
+  border-radius: 2px;
+  color: #fff;
   cursor: pointer;
   font-size: 16px;
   margin: 10px 0;
@@ -47,7 +48,7 @@ body {
 }
 
 .controller button:hover {
-  background: rgba(255, 255, 255, .5);
+  background: #444;
 }
 
 .hover-modal {

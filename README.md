@@ -12,7 +12,7 @@ bundle program (`public/bundle.js`) with Webpack.
 
 [Live Demo*](http://dcthetall-webgl-raytracer.herokuapp.com)
 
-*The live demo is operational, however I recommend you use a VR capable GPU for the best experience
+*I got this to work on my laptop which uses an Intel Iris Graphics 6100 (not great) and it renders at 10 fps reasonably. I do not recommend trying to open it on mobile or a netbook.
 
 ---
 
