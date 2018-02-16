@@ -1,2 +1,2 @@
-export const ORBIT_CONTROLLER_INSTRUCTIONS: string = 'Enabling this feature will allow you to click and drag to change the position of the camera in the scene. The camera can orbit freely about a half sphere (less GPU intensive, only needs to render when you click and drag).';
-export const MOUSE_CASTER_CONTROLLER: string = 'Enabing this feature will cause certain objects to glow when your mouse hovers over them, (more GPU intensive, it needs to render every time you move your mouse).';
+export const ORBIT_CONTROLLER_INSTRUCTIONS = 'Enabling this feature will allow you to click and drag to change the position of the camera in the scene. The camera can orbit freely about a half sphere (more GPU intensive, it renders when you click and drag).';
+export const MOUSE_CASTER_INSTRUCTIONS = 'Enabing this feature will cause certain objects to glow when your mouse hovers over them, (Less GPU intensive, it only renders when the hover state of an object in the scene changes).';

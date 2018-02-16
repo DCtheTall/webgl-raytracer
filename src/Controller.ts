@@ -1,6 +1,6 @@
 import {
   ORBIT_CONTROLLER_INSTRUCTIONS,
-  MOUSE_CASTER_CONTROLLER,
+  MOUSE_CASTER_INSTRUCTIONS,
 } from './lib/constants';
 import Raytracer from './Raytracer';
 import OrbitController from './OrbitController';
@@ -47,11 +47,10 @@ export default class Controller {
     if (window.innerWidth - event.clientX > 220) left = event.clientX + 10;
     else right = (window.innerWidth - event.clientX) + 10;
     top = event.clientY;
-    innerHTML = event.srcElement.id === 'orbit-control-toggle' ? ORBIT_CONTROLLER_INSTRUCTIONS : MOUSE_CASTER_CONTROLLER;
+    innerHTML = event.srcElement.id === 'orbit-control-toggle' ? ORBIT_CONTROLLER_INSTRUCTIONS : MOUSE_CASTER_INSTRUCTIONS;
 
     this.hoverModal.style.display = 'block';
-    this.hoverModal.style.left = left ? left + 'px' : undefined;
-    this.hoverModal.style.right = right ? right + 'px' : undefined;
+    this.hoverModal.style.right = (window.innerWidth - event.clientX) + 10 + 'px';
     this.hoverModal.style.top = top + 'px';
     this.hoverModal.innerHTML = innerHTML;
   }

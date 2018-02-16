@@ -20,7 +20,8 @@ export default class MouseCaster {
     this.raytracer = raytracer;
     this.mouseMoveCallback = () => {};
     this.enabled = false;
-    window.addEventListener('mousemove', (event) => this.mouseMoveCallback(event));
+    this.castRayIntoScene = this.castRayIntoScene.bind(this);
+    window.addEventListener('mousemove', event => this.mouseMoveCallback(event));
   }
 
   private castRayIntoScene(event: MouseEvent): void {
@@ -78,12 +79,14 @@ export default class MouseCaster {
       }
     });
 
-    if (closestModel) {
-      this.closestModel = closestModel;
-      closestModel.isHovering = true;
-    }
+    if (closestModel === this.closestModel) return;
 
+    if (this.closestModel) this.closestModel.isHovering = false;
+    if (closestModel) closestModel.isHovering = true;
+    this.closestModel = closestModel;
+    this.mouseMoveCallback = () => {};
     this.raytracer.render();
+    this.mouseMoveCallback = this.castRayIntoScene;
   }
 
   public enable(): void {
