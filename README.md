@@ -1,4 +1,4 @@
-![Raytracer screenshot](http://dcthetall-webgl-raytracer.herokuapp.com/demo-picture.png)
+![Raytracer screenshot](./public/demo-picture.png)
 
 # WebGL Raytracer
 Author: Dylan Cutler
