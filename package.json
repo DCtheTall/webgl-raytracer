@@ -27,6 +27,7 @@
     "morgan": "^1.9.0",
     "pug": "^2.0.0-rc.4",
     "raw-loader": "^0.5.1",
+    "static-eval": "^2.0.0",
     "ts-loader": "^2.3.7",
     "typescript": "^2.5.3",
     "webpack": "^3.7.1"
