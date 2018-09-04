@@ -1,5 +1,5 @@
 /**
- * Ray intersection test for a coaxial cube
+ * Ray intersection test for a cube
  */
 float intersectCube(
   vec3 rayStart,
